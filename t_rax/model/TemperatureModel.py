@@ -519,8 +519,8 @@ class SingleTemperatureModel(QtCore.QObject):
 
         self.calibration_parameter = CalibrationParameter()
 
-        self.temperature = np.NaN
-        self.temperature_error = np.NaN
+        self.temperature = np.nan
+        self.temperature_error = np.nan
         self.fit_spectrum = Spectrum([], [])
 
     @property
@@ -560,8 +560,8 @@ class SingleTemperatureModel(QtCore.QObject):
         self.corrected_spectrum = Spectrum([], [])
         self.fit_spectrum = Spectrum([], [])
 
-        self.temperature = np.NaN
-        self.temperature_error = np.NaN
+        self.temperature = np.nan
+        self.temperature_error = np.nan
         self.fit_spectrum = Spectrum([], [])
         self.data_changed.emit()
 
@@ -608,7 +608,7 @@ class SingleTemperatureModel(QtCore.QObject):
             self.calibration_spectrum.data = calibration_x, calibration_y
 
     def _update_corrected_spectrum(self):
-        if len(self.data_spectrum) is 0:
+        if len(self.data_spectrum) == 0:
             self.corrected_spectrum = Spectrum([], [])
             return
 
@@ -633,8 +633,8 @@ class SingleTemperatureModel(QtCore.QObject):
             self.temperature, self.temperature_error, self.fit_spectrum = \
                 fit_black_body_function(self.corrected_spectrum)
         else:
-            self.temperature = np.NaN
-            self.temperature_error = np.NaN
+            self.temperature = np.nan
+            self.temperature_error = np.nan
             self.fit_spectrum = Spectrum([], [])
 
 
@@ -644,7 +644,7 @@ class SingleTemperatureModel(QtCore.QObject):
 
 def calculate_real_spectrum(data_spectrum, calibration_spectrum, etalon_spectrum):
     response_y = calibration_spectrum._y / etalon_spectrum._y
-    response_y[np.where(response_y == 0)] = np.NaN
+    response_y[np.where(response_y == 0)] = np.nan
     corrected_y = data_spectrum._y / response_y
     corrected_y = corrected_y / np.max(corrected_y) * np.max(data_spectrum._y)
     return Spectrum(data_spectrum._x, corrected_y)
@@ -654,11 +654,10 @@ def fit_black_body_function(spectrum):
     try:
         param, cov = curve_fit(black_body_function, spectrum._x, spectrum._y, p0=[2000, 1e-11])
         T = param[0]
-        T_err = np.sqrt(cov[0, 0])
-
+        T_err = np.sqrt(np.abs(cov[0, 0])) if cov[0, 0] > 0 else np.nan  # Handle invalid covariance
         return T, T_err, Spectrum(spectrum._x, black_body_function(spectrum._x, param[0], param[1]))
     except (RuntimeError, TypeError, ValueError):
-        return np.NaN, np.NaN, Spectrum([], [])
+        return np.nan, np.nan, Spectrum([], [])
 
 
 def black_body_function(wavelength, temp, scaling):
@@ -670,7 +669,7 @@ def black_body_function(wavelength, temp, scaling):
 
 class CalibrationParameter(object):
     def __init__(self, modus=0):
-        self.modus = modus
+        self.modus = int(modus)  # Ensure modus is always an integer
         # modi: 0 - given temperature
         # 1 - etalon spectrum
 
@@ -681,7 +680,7 @@ class CalibrationParameter(object):
         self.etalon_file_name = 'Select File...'
 
     def set_modus(self, modus):
-        self.modus = modus
+        self.modus = int(modus)  # Ensure modus is always an integer
 
     def set_temperature(self, temperature):
         self.temperature = temperature

@@ -98,7 +98,7 @@ class RubyModel(SingleSpectrumModel):
         try:
             rat = (lam / lam0corr) ** B
         except ValueError:
-            return np.NaN
+            return np.nan
         P = (Acorr / B) * rat - (Acorr / B)
         P = (P * 100) / 100.
         return P

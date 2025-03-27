@@ -18,6 +18,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # from __future__ import absolute_import
 
+import os
+os.environ['QT_MAC_WANTS_LAYER'] = '1'  # Suppress macOS-specific warnings
+
 import t_rax
 t_rax.run_t_rax()
 

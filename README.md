@@ -20,30 +20,34 @@ Center for Advanced Radiation Sources, University of Chicago
 Requirements
 ===
 
-- Python 2.7
+- Python 3.13
 - qtpy
+- pyqt5
 - numpy
 - scipy
 - pyqtgraph
-- dateutils
+- pyshortcuts
+- pillow
+- pyepics
+- python-dateutil
 - lmfit
 - h5py
     
 Installation
 ===
 
-Except for qtpy, all of those packages can be easily installed using "pip" as python package manager. If you are on
-Windows or Mac, please try to install qtpy by using a precompiled python distribution such as anaconda, enthought,
-winpython or Python(x,y). On Linux PyQt usually can be easily installed using the packagemanager.
+Updated information for creating a new conda environment and installing all required packages for GSECARS.
 
-Using the minimum anaconda distribution, you have to only type the following two commands:
+```bash
+conda create -n traxENV python=3.13
+conda activate traxENV
+pip install qtpy pyqt5 pyqtgraph==0.12.0 lmfit h5py scipy pyshortcuts pyepics numpy scipy python-dateutil pillow
 
-    conda install pyqt numpy scipy h5py
-    pip install pyqtgraph dateutils lmfit
+```
     
 The program itself can then be run by going into the "t-rax" directory and type:
     
-    python t-rax.py
+    python run_t_rax.py
 
 
 

@@ -156,7 +156,7 @@ def get_roi_sum(img, roi):
     """
     roi = validate_roi(roi)
     roi_img = img[int(roi.y_min):int(roi.y_max) + 1, int(roi.x_min):int(roi.x_max) + 1]
-    return np.sum(roi_img, 0) / np.float(np.size(roi_img, 0))
+    return np.sum(roi_img, 0) / float(np.size(roi_img, 0))
 
 
 def get_roi_max(img, roi):
