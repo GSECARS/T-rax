@@ -52,6 +52,7 @@ class RoiWidget(QtWidgets.QWidget):
 
         self._roi_gbs_layout = QtWidgets.QVBoxLayout()
         self.roi_gbs = []
+        self.roi_GBS = None
         self.create_roi_gbs()
         self._roi_gbs_layout.addSpacerItem(QtWidgets.QSpacerItem(20, 20,
                                                              QtWidgets.QSizePolicy.Expanding,
@@ -75,7 +76,8 @@ class RoiWidget(QtWidgets.QWidget):
 
     def create_roi_gbs(self):
         for ind in range(self.roi_num):
-            self.roi_gbs.append(RoiGroupBox(self.roi_titles[ind], self.roi_colors[ind]))
+            self.roi_GBS = RoiGroupBox(self.roi_titles[ind], self.roi_colors[ind])
+            self.roi_gbs.append(self.roi_GBS)
             self.roi_gbs[-1].roi_txt_changed.connect(partial(self._update_img_roi, ind))
             self._roi_gbs_layout.addWidget(self.roi_gbs[-1])
 
@@ -112,10 +114,11 @@ class RoiWidget(QtWidgets.QWidget):
     def add_item(self, pg_item):
         self.img_widget.pg_viewbox.addItem(pg_item)
 
+
 class RoiGroupBox(QtWidgets.QGroupBox):
     roi_txt_changed = QtCore.Signal(list)
 
-    def __init__(self, title, color):
+    def __init__(self, title=None, color=None):
         super(RoiGroupBox, self).__init__(title)
         self.color = color
         self._grid_layout = QtWidgets.QGridLayout()
@@ -267,7 +270,7 @@ class RoiImageWidget(QtWidgets.QWidget):
         if ev.button() == QtCore.Qt.RightButton or \
                 (ev.button() == QtCore.Qt.LeftButton and
                          ev.modifiers() & QtCore.Qt.ControlModifier):
-            self.pg_viewbox.scaleBy((2, 2))
+            self.pg_viewbox.scaleBy(2)
 
         elif ev.button() == QtCore.Qt.LeftButton:
             pos = self.pg_viewbox.mapFromScene(ev.pos())

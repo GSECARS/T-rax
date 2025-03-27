@@ -17,20 +17,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+__version__ = '1.2'
+
 import os
 import sys
 from sys import platform
 from optparse import OptionParser
 from pyshortcuts import make_shortcut
 from qtpy import QtWidgets
-
-from .version import get_version
-__version__ = get_version()
-
-resources_path = os.path.join(os.path.dirname(__file__), 'resources')
-icons_path = os.path.join(resources_path, 'icons')
-style_path = os.path.join(resources_path, 'style')
-
 from .controller.MainController import MainController
 
 
@@ -50,19 +44,14 @@ def run_t_rax():
             bindir = 'Scripts'
         script = os.path.join(sys.prefix, bindir, 'run_t_rax')
         _path, _fname = os.path.split(__file__)
-        iconfile = os.path.join(_path, 'resources', 'icons', 't_rax.ico')
+        iconfile = os.path.join(_path, 'widget', 'icons', 't_rax.ico')
         make_shortcut(script, name='T-Rax',icon=iconfile, terminal=True)
         
     else:
-        if len(sys.argv) == 1: # normal start
-            app = QtWidgets.QApplication(sys.argv)
-            if platform != "darwin":
-                app.setStyle('plastique')
-            controller = MainController()
-            controller.show_window()
-            app.exec_()
-        else: # with command line arguments
-            if sys.argv[1] == 'test':
-                app = QtWidgets.QApplication(sys.argv)
-                controller = MainController()
-                controller.show_window()
+        app = QtWidgets.QApplication(sys.argv)
+        if platform != "darwin":
+            app.setStyle('plastique')
+        controller = MainController()
+        controller.show_window()
+        app.exec_()
+

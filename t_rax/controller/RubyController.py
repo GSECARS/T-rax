@@ -18,8 +18,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-
+import time
 from qtpy import QtCore
+from PyQt5.QtCore import QThread
 
 from ..model.RubyModel import RubyModel
 from ..widget.RubyWidget import RubyWidget
@@ -43,6 +44,8 @@ class RubyController(QtCore.QObject):
         self.widget = widget
 
         self.widget.set_ruby_line_pos(self.model.sample_position)
+
+        self.thread = Worker(self.ruby_pressure_read, ())
 
         self.connect_signals()
 
@@ -151,3 +154,21 @@ class RubyController(QtCore.QObject):
             roi = [float(e) for e in roi_str.split()]
             self.model.roi = roi
             self.widget.roi_widget.set_rois([roi])
+
+    def ruby_pressure_read(self):
+
+        while True:
+            self.model.sample_position = float(self.widget.get_ruby_line_pos())
+            time.sleep(.05)
+
+
+class Worker(QThread):
+
+    def __init__(self, method, args):
+        super(Worker, self).__init__()
+
+        self.method = method
+        self.args = args
+
+    def run(self):
+        self.method(*self.args)

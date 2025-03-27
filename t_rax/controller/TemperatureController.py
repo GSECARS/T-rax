@@ -118,10 +118,10 @@ class TemperatureController(QtCore.QObject):
 
         for filename in filenames:
             if filename is not '':
+                self.model.save_txt(filename=filename)
                 self._exp_working_dir = os.path.dirname(str(filename))
                 self.model.load_data_image(str(filename))
                 self._directory_watcher.path = self._exp_working_dir
-                print('Loaded File: ', filename)
 
     def load_ds_calibration_file(self, filename=None):
         if filename is None or filename is False:

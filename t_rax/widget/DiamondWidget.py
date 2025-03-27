@@ -18,6 +18,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from qtpy import QtWidgets, QtCore, QtGui
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QShortcut
 import pyqtgraph as pg
 
 from .BaseWidget import BaseWidget
@@ -31,6 +33,9 @@ class DiamondWidget(BaseWidget, object):
 
         self.create_diamond_shortcuts()
         self.modify_graph_widget()
+
+        QShortcut(Qt.Key_Left, self, self.arrow_left)
+        QShortcut(Qt.Key_Right, self, self.arrow_right)
 
     def create_diamond_shortcuts(self):
         self.pressure_lbl = self._diamond_gb._pressure_lbl
@@ -53,6 +58,20 @@ class DiamondWidget(BaseWidget, object):
 
     def get_diamond_line_pos(self):
         return self._diamond_line.value()
+
+    def arrow_left(self):
+        current_pos = self.get_diamond_line_pos()
+
+        self.set_diamond_line_pos(float(current_pos) - 0.3)
+        new_value = self.get_diamond_line_pos()
+        self.sample_position_txt.setText("{:.2f}".format(new_value))
+
+    def arrow_right(self):
+        current_pos = self.get_diamond_line_pos()
+
+        self.set_diamond_line_pos(float(current_pos) + 0.3)
+        new_value = self.get_diamond_line_pos()
+        self.sample_position_txt.setText("{:.2f}".format(new_value))
 
 
 class DiamondPressureGroupBox(QtWidgets.QGroupBox):

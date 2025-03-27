@@ -107,17 +107,29 @@ class MainController(object):
         self.hide_module_widgets()
         self.main_widget.ruby_widget.show()
 
+        self.diamond_controller.thread.terminate()
+        self.ruby_controller.thread.start()
+
     def navigation_diamond_btn_clicked(self):
         self.hide_module_widgets()
         self.main_widget.diamond_widget.show()
+
+        self.ruby_controller.thread.terminate()
+        self.diamond_controller.thread.start()
 
     def navigation_raman_btn_clicked(self):
         self.hide_module_widgets()
         self.main_widget.raman_widget.show()
 
+        self.ruby_controller.thread.terminate()
+        self.diamond_controller.thread.terminate()
+
     def navigation_temperature_btn_clicked(self):
         self.hide_module_widgets()
         self.main_widget.temperature_widget.show()
+
+        self.ruby_controller.thread.terminate()
+        self.diamond_controller.thread.terminate()
 
     def hide_module_widgets(self):
         self.main_widget.temperature_widget.hide()

@@ -24,7 +24,9 @@ from qtpy import QtCore, QtWidgets
 
 from ..model.BaseModel import SingleSpectrumModel
 from ..widget.BaseWidget import BaseWidget
+from ..widget.RoiWidget import RoiGroupBox
 from ..widget.Widgets import open_file_dialog, save_file_dialog, open_files_dialog
+from .MapController import MapController
 
 from .NewFileInDirectoryWatcher import NewFileInDirectoryWatcher
 
@@ -40,6 +42,8 @@ class BaseController(QtCore.QObject):
         self.widget = widget
         self.model = model
 
+        self.map_controller = MapController('', self.widget, self.model)
+
         self._working_dir = ''
         self._create_autoprocess_system()
 
@@ -47,8 +51,8 @@ class BaseController(QtCore.QObject):
 
     def connect_signals(self):
         self.connect_click_function(self.widget.load_file_btn, self.load_file_btn_clicked)
-        self.widget.load_next_file_btn.clicked.connect(self.model.load_next_file)
-        self.widget.load_previous_file_btn.clicked.connect(self.model.load_previous_file)
+        self.widget.load_next_file_btn.clicked.connect(self.clicked_load_next_file)
+        self.widget.load_previous_file_btn.clicked.connect(self.clicked_load_previous_file)
         self.widget.load_next_frame_btn.clicked.connect(self.model.load_next_frame)
         self.widget.load_previous_frame_btn.clicked.connect(self.model.load_previous_frame)
 
@@ -64,6 +68,25 @@ class BaseController(QtCore.QObject):
 
         self.widget.graph_widget.mouse_moved.connect(self.graph_mouse_moved)
         self.widget.roi_widget.img_widget.mouse_moved.connect(self.img_mouse_moved)
+        self.widget.show_2d_map_btn.clicked.connect(self.show_2d_map_btn_clicked)
+
+    def clicked_load_next_file(self):
+        self.model.load_next_file()
+
+        self.widget.roi_widget.roi_GBS.y_min_txt.setText("32")
+        self.widget.roi_widget.roi_GBS.y_max_txt.setText("66")
+        self.widget.roi_widget.roi_GBS.x_min_txt.setText("0")
+        self.widget.roi_widget.roi_GBS.x_max_txt.setText("5000")
+        self.widget.roi_widget.roi_GBS.roi_txt_changed.emit(self.widget.roi_widget.roi_GBS.get_roi_limits())
+
+    def clicked_load_previous_file(self):
+        self.model.load_previous_file()
+
+        self.widget.roi_widget.roi_GBS.y_min_txt.setText("32")
+        self.widget.roi_widget.roi_GBS.y_max_txt.setText("66")
+        self.widget.roi_widget.roi_GBS.x_min_txt.setText("0")
+        self.widget.roi_widget.roi_GBS.x_max_txt.setText("5000")
+        self.widget.roi_widget.roi_GBS.roi_txt_changed.emit(self.widget.roi_widget.roi_GBS.get_roi_limits())
 
     def connect_click_function(self, emitter, function):
         emitter.clicked.connect(function)
@@ -75,11 +98,27 @@ class BaseController(QtCore.QObject):
             filenames = open_files_dialog(self.widget, caption="Load Experiment SPE",
                                           directory=self._working_dir)
 
+        if len(filenames) > 1 and self.widget.batch_mode_mapping_rb.isChecked():
+            self.model.map_model.reset_map_data()
+            self.model.map_model.all_positions_defined_in_files = True
+            self.model.map_model.map_uses_patterns = False
+
+        # TODO - Added from Cris
         for filename in filenames:
             if filename is not '':
                 self.load_data_file(filename)
-                if len(filenames) > 1:
-                    self.save_data_btn_clicked(filename=filename)
+                if self.widget.batch_mode_export_rb.isChecked():
+                    if len(filenames) >= 1:
+                        self.save_data_btn_clicked(filename=filename)
+                        if self.widget.batch_mode_mapping_rb.isChecked():
+                            map_working_directory = os.path.dirname(filename)
+                            self.model.map_model.add_file_to_map_data(filename, map_working_directory, None)
+
+        self.widget.roi_widget.roi_GBS.y_min_txt.setText("32")
+        self.widget.roi_widget.roi_GBS.y_max_txt.setText("66")
+        self.widget.roi_widget.roi_GBS.x_min_txt.setText("0")
+        self.widget.roi_widget.roi_GBS.x_max_txt.setText("5000")
+        self.widget.roi_widget.roi_GBS.roi_txt_changed.emit(self.widget.roi_widget.roi_GBS.get_roi_limits())
 
     def load_data_file(self, filename):
         self.model.load_file(filename)
@@ -98,8 +137,10 @@ class BaseController(QtCore.QObject):
         else:
             filename = filename.rsplit('.', 1)[0] + '.txt'
 
+        # TODO - Added from Chris
         if filename is not '':
-            self.model.save_txt(filename)
+            if self.widget.batch_mode_export_rb.isChecked():
+                self.model.save_txt(filename)
 
     def save_graph_btn_clicked(self):
 
@@ -138,7 +179,7 @@ class BaseController(QtCore.QObject):
         called when the roi is changed in the roi Widget, will recalculate the spectrum and then plot the new updated
         one.
         """
-        self.model.roi = np.round(self.widget.roi_widget.get_rois()[0]).astype(np.int)
+        self.model.roi = self.widget.roi_widget.get_rois()[0]
 
     def graph_mouse_moved(self, x, y):
         self.widget.graph_mouse_pos_lbl.setText("X: {:8.2f} Y: {:8.2f}".format(x, y))
@@ -170,3 +211,6 @@ class BaseController(QtCore.QObject):
 
     def set_iteration_mode_time(self):
         self.model.set_file_iteration_mode('time')
+
+    def show_2d_map_btn_clicked(self):
+        self.widget.map_2D_widget.raise_widget()

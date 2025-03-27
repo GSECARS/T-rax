@@ -18,7 +18,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from qtpy import QtCore
+from PyQt5.QtCore import QThread
 import os
+import time
 
 from ..model.DiamondModel import DiamondModel
 from ..widget.DiamondWidget import DiamondWidget
@@ -38,6 +40,8 @@ class DiamondController(QtCore.QObject):
         self.base_controller = BaseController(model, widget)
         self.model = model
         self.widget = widget
+
+        self.thread = Worker(self.diamond_pressure_read, ())
 
         self.connect_signals()
 
@@ -123,3 +127,22 @@ class DiamondController(QtCore.QObject):
             roi = [float(e) for e in roi_str.split()]
             self.model.roi = roi
             self.widget.roi_widget.set_rois([roi])
+
+    def diamond_pressure_read(self):
+
+        while True:
+            self.model.sample_position = float(self.widget.get_diamond_line_pos())
+            time.sleep(.05)
+
+
+class Worker(QThread):
+
+    def __init__(self, method, args):
+        super(Worker, self).__init__()
+
+        self.method = method
+        self.args = args
+
+    def run(self):
+        self.method(*self.args)
+

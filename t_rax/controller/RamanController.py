@@ -36,11 +36,11 @@ class RamanBaseController(BaseController):
         if self.widget.nanometer_cb.isChecked():
             x1 = self.model.convert_wavelength_to_reverse_cm(x, self.model.laser_line)
             self.widget.graph_mouse_pos_lbl.setText(
-                "X: {:8.2f} nm {:8.2f} cm<sup>-1</sup>   Y: {:8.2f}".format(x, x1, y))
+                "X: {:8.2f} nm , {:8.2f} cm<sup>-1</sup>   Y: {:8.2f}".format(x, x1, y))
         elif self.widget.reverse_cm_cb.isChecked():
             x1 = self.model.convert_reverse_cm_to_wavelength(x, self.model.laser_line)
             self.widget.graph_mouse_pos_lbl.setText(
-                "X: {:8.2f} nm {:8.2f} cm<sup>-1</sup>   Y: {:8.2f}".format(x1, x, y))
+                "X: {:8.2f} nm , {:8.2f} cm<sup>-1</sup>   Y: {:8.2f}".format(x1, x, y))
 
 
 class RamanController(QtCore.QObject):
@@ -112,14 +112,8 @@ class RamanController(QtCore.QObject):
         self.widget.sample_position_txt.setText("{:.2f}".format(x))
         self.widget.set_raman_vertical_line_pos(x)
         self.widget.set_raman_horizontal_line_pos(y)
-        if self.widget.nanometer_cb.isChecked():
-            x1 = self.model.convert_wavelength_to_reverse_cm(x, self.model.laser_line)
-            self.widget.graph_mouse_click_pos_lbl.setText(
-                "X: {:8.2f} nm {:8.2f} cm<sup>-1</sup>     Y: {:8.2f}".format(x, x1, y))
-        elif self.widget.reverse_cm_cb.isChecked():
-            x1 = self.model.convert_reverse_cm_to_wavelength(x, self.model.laser_line)
-            self.widget.graph_mouse_click_pos_lbl.setText(
-                "X: {:8.2f} nm {:8.2f} cm<sup>-1</sup>     Y: {:8.2f}".format(x1, x, y))
+
+        self.update_text(x, y)
 
         if self.model.mode == RamanModel.REVERSE_CM_MODE:
             x = self.model.convert_reverse_cm_to_wavelength(x, self.model.laser_line)
@@ -185,7 +179,6 @@ class RamanController(QtCore.QObject):
 
     def overlay_removed(self, ind):
         self.widget.remove_overlay(ind)
-
 
     def overlay_show_cb_state_changed(self, ind, state):
         """
@@ -285,3 +278,13 @@ class RamanController(QtCore.QObject):
         #     self.widget.set_as_bkg_btn.setChecked(True)
         # else:
         #     self.widget.set_as_bkg_btn.setChecked(False)
+
+    def update_text(self, x, y):
+        if self.widget.nanometer_cb.isChecked():
+            x1 = self.model.convert_wavelength_to_reverse_cm(x, self.model.laser_line)
+            self.widget.graph_mouse_click_pos_lbl.setText(
+                "X: {:8.2f} nm , {:8.2f} cm<sup>-1</sup>     Y: {:8.2f}".format(x, x1, y))
+        elif self.widget.reverse_cm_cb.isChecked():
+            x1 = self.model.convert_reverse_cm_to_wavelength(x, self.model.laser_line)
+            self.widget.graph_mouse_click_pos_lbl.setText(
+                "X: {:8.2f} nm , {:8.2f} cm<sup>-1</sup>     Y: {:8.2f}".format(x1, x, y))

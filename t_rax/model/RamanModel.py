@@ -65,6 +65,7 @@ class RamanModel(SingleSpectrumModel, object):
         else:
             units = 'cm^-1'
         print(self.roi.x_min, self.roi.x_max, self.roi.y_min, self.roi.y_max)
+
         roi = '[' + str(int(self.roi.x_min)) + ', ' + str(int(self.roi.x_max)) + '] [' + str(int(self.roi.y_min)) + \
               ', ' + str(int(self.roi.y_max)) + ']'
         log_data = (os.path.basename(filename), os.path.dirname(filename), str(self.spe_file.exposure_time),

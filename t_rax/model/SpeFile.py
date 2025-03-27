@@ -68,15 +68,12 @@ class SpeFile(object):
         header (version 2) or in the xml-footer for the experimental parameters"""
         self._read_size()
         self._read_datatype()
-        self.xml_offset = self._read_at(678, 1, np.long)[0]
-        if self.xml_offset <= 0:  # means that there is no XML present, hence it is a pre 3.0 version of the SPE
+        self.xml_offset = self._read_at(678, 1, np.long)
+        if self.xml_offset == [0]:  # means that there is no XML present, hence it is a pre 3.0 version of the SPE
             # file
             self._read_parameter_from_header()
         else:
-            try:
-                self._read_parameter_from_dom()
-            except: # if fails for any reason, try reading from the header
-                self._read_parameter_from_header()
+            self._read_parameter_from_dom()
 
     def _read_size(self):
         """reads the dimensions of the Model from the header into the object
@@ -171,9 +168,9 @@ class SpeFile(object):
 
     def _get_xml_string(self):
         """Reads out the xml string from the file end"""
-        self._fid.seek(int(self.xml_offset))
-        self.xml_string = self._fid.read()
-
+        xml_size = self.get_file_size() - self.xml_offset
+        xml = self._read_at(self.xml_offset, xml_size, np.byte)
+        self.xml_string = ''.join([chr(i) for i in xml])
         if self.debug:
             fid = open(self.filename+'.xml', 'w')
             for line in self.xml_string:
@@ -279,16 +276,6 @@ class SpeFile(object):
                 self.roi_y = 0
                 self.roi_width = self._xdim
                 self.roi_height = self._ydim
-            elif self.roi_modus == 'LineSensor':
-                self.roi_dom_width = self.dom.getElementsByTagName('DataFormat')[0]. \
-                                        getElementsByTagName('DataBlock')[0].\
-                                        getElementsByTagName('DataBlock')[0]
-                self.roi_width = int(self.roi_dom_width.attributes['width'].value)
-                self.roi_height = 1
-                self.roi_x = 0
-                self.roi_y = 0
-                self._xdim = self.roi_width
-                self._ydim = 1
 
         except IndexError:
             self.roi_x = 0

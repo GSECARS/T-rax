@@ -24,6 +24,7 @@ from .SpeFile import SpeFile
 from .RoiData import RoiDataManager, Roi, validate_roi, get_roi_max, get_roi_sum
 from .Spectrum import Spectrum
 from .helper import FileNameIterator
+from .MapModel import MapModel
 
 
 class SingleSpectrumModel(QtCore.QObject, object):
@@ -48,6 +49,7 @@ class SingleSpectrumModel(QtCore.QObject, object):
         self._filename_iterator = FileNameIterator()
         self.roi_manager = RoiDataManager(1)
         self.data_spectrum = Spectrum([], [])
+        self.map_model = MapModel()
 
     def load_file(self, filename):
         self.spe_file = SpeFile(filename)
@@ -70,6 +72,7 @@ class SingleSpectrumModel(QtCore.QObject, object):
         new_filename = self._filename_iterator.get_next_filename(mode=self.file_iteration_mode)
         if new_filename is not None:
             self.load_file(new_filename)
+
 
     def load_previous_file(self):
         new_filename = self._filename_iterator.get_previous_filename(mode=self.file_iteration_mode)

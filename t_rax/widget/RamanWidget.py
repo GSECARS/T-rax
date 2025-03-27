@@ -18,6 +18,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from qtpy import QtWidgets, QtCore
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QShortcut
 
 import pyqtgraph as pg
 import numpy as np
@@ -25,6 +27,8 @@ import numpy as np
 from .BaseWidget import BaseWidget
 from functools import partial
 from colorsys import hsv_to_rgb
+
+from ..model.RamanModel import RamanModel
 
 
 class RamanWidget(BaseWidget, object):
@@ -55,6 +59,13 @@ class RamanWidget(BaseWidget, object):
         self.overlay_labels = []
         self.overlay_color_btns = []
 
+        self.model = RamanModel()
+
+        QShortcut(Qt.Key_Up, self, self.arrow_up)
+        QShortcut(Qt.Key_Down, self, self.arrow_down)
+        QShortcut(Qt.Key_Left, self, self.arrow_left)
+        QShortcut(Qt.Key_Right, self, self.arrow_right)
+
     def create_raman_shortcuts(self):
         self.laser_line_txt = self.display_mode_gb._laser_line_txt
         self.reverse_cm_cb = self.display_mode_gb._reverse_cm_cb
@@ -78,12 +89,14 @@ class RamanWidget(BaseWidget, object):
     def get_raman_vertical_line_pos(self):
         return self._raman_vertical_line.value()
 
+    def get_raman_horizontal_line_pos(self):
+        return self._raman_horizontal_line.value()
+
     def set_raman_horizontal_line_pos(self, value):
         self._raman_horizontal_line.setValue(value)
 
     def get_raman_horizontal_line_pos(self):
         return self._raman_horizontal_line.value()
-
 
     def set_raman_roi_line_pos(self, value):
         self._raman_roi_line.setValue(value)
@@ -158,6 +171,7 @@ class RamanWidget(BaseWidget, object):
 
         self.overlay_tw.setColumnWidth(0, 20)
         self.overlay_tw.setColumnWidth(1, 25)
+        self.overlay_tw.setColumnWidth(2, 500)
         self.overlay_tw.setRowHeight(current_rows, 25)
         self.select_overlay(current_rows)
         self.overlay_tw.blockSignals(False)
@@ -224,6 +238,47 @@ class RamanWidget(BaseWidget, object):
         x, y = pattern.data
         self.overlays[ind].setData(x, y)
         # self.update_graph_range()
+
+    def update_text(self, x, y):
+        if self.nanometer_cb.isChecked():
+            x1 = self.model.convert_wavelength_to_reverse_cm(x, self.model.laser_line)
+            self.graph_mouse_click_pos_lbl.setText(
+                "X: {:8.2f} nm , {:8.2f} cm<sup>-1</sup>     Y: {:8.2f}".format(x, x1, y))
+        elif self.reverse_cm_cb.isChecked():
+            x1 = self.model.convert_reverse_cm_to_wavelength(x ,self.model.laser_line)
+            self.graph_mouse_click_pos_lbl.setText(
+                "X: {:8.2f} nm , {:8.2f} cm<sup>-1</sup>     Y: {:8.2f}".format(x1, x, y))
+
+        self.sample_position_txt.setText("{:8.2f}".format(x))
+
+    def arrow_up(self):
+        current_position_x = self.get_raman_vertical_line_pos()
+        current_position_y = self.get_raman_horizontal_line_pos()
+
+        self.set_raman_horizontal_line_pos(current_position_y + .1)
+        self.update_text(current_position_x, current_position_y)
+
+    def arrow_down(self):
+        current_position_x = self.get_raman_vertical_line_pos()
+        current_position_y = self.get_raman_horizontal_line_pos()
+
+        self.set_raman_horizontal_line_pos(current_position_y - .1)
+        self.update_text(current_position_x, current_position_y)
+
+    def arrow_left(self):
+        current_position_x = self.get_raman_vertical_line_pos()
+        current_position_y = self.get_raman_horizontal_line_pos()
+
+        self.set_raman_vertical_line_pos(current_position_x - .05)
+        self.update_text(current_position_x, current_position_y)
+
+    def arrow_right(self):
+        current_position_x = self.get_raman_vertical_line_pos()
+        current_position_y = self.get_raman_horizontal_line_pos()
+
+        self.set_raman_vertical_line_pos(current_position_x + .05)
+        self.update_text(current_position_x, current_position_y)
+
 
 class DisplayModeGroupBox(QtWidgets.QGroupBox):
     def __init__(self, title='Options'):
@@ -358,6 +413,7 @@ class ListTableWidget(QtWidgets.QTableWidget):
 
         self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
         self.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
+        self.setHorizontalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
         self.setColumnCount(columns)
         self.horizontalHeader().setVisible(False)
         self.verticalHeader().setVisible(False)

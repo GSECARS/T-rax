@@ -22,6 +22,7 @@ from qtpy import QtCore, QtWidgets
 from .RoiWidget import RoiWidget
 from .SpectrumWidget import SpectrumWidget
 from .Widgets import FileGroupBox, OutputGroupBox, StatusBar
+from .MapWidgets import Map2DWidget
 
 
 class BaseWidget(QtWidgets.QWidget):
@@ -39,6 +40,7 @@ class BaseWidget(QtWidgets.QWidget):
         self.graph_widget = SpectrumWidget()
         self.control_widget = ControlWidget()
         self.graph_status_bar = StatusBar()
+        self.map_2D_widget = Map2DWidget(self)
         self.roi_widget = RoiWidget(1, roi_colors=[(255, 255, 255)])
 
         self._graph_control_layout.addWidget(self.graph_widget, 0, 0)
@@ -59,6 +61,8 @@ class BaseWidget(QtWidgets.QWidget):
 
         self.style_widgets()
         self.create_shortcuts()
+
+
 
     def style_widgets(self):
         self._graph_control_layout.setSpacing(0)
@@ -85,8 +89,12 @@ class BaseWidget(QtWidgets.QWidget):
         self.load_next_frame_btn = self.control_widget._file_gb.load_next_frame_btn
         self.load_previous_frame_btn = self.control_widget._file_gb.load_previous_frame_btn
 
+        self.batch_mode_export_rb = self.control_widget._file_gb.batch_mode_export_rb
+        self.batch_mode_mapping_rb = self.control_widget._file_gb.batch_mode_mapping_rb
+
         self.save_data_btn = self.control_widget._output_gb.save_data_btn
         self.save_graph_btn = self.control_widget._output_gb.save_graph_btn
+        self.show_2d_map_btn = self.control_widget._output_gb.view_2d_map_btn
 
         self.graph_info_lbl = self.graph_status_bar.right_lbl
         self.graph_mouse_pos_lbl = self.graph_status_bar.left_lbl

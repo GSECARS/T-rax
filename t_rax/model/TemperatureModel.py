@@ -322,11 +322,24 @@ class TemperatureModel(QtCore.QObject):
         header_ds = header + "\t".join(("lambda(nm)", "DS_data", "DS_fit"))
         header_us = header + "\t".join(("lambda(nm)", "US_data", "US_fit"))
 
-        output_matrix_ds = np.vstack((self.ds_data_spectrum.x,
-                                      self.ds_corrected_spectrum.y, self.ds_fit_spectrum.y))
+        # output_matrix_ds = np.vstack((self.ds_data_spectrum.x,
+        #                               self.ds_corrected_spectrum.y, self.ds_fit_spectrum.y))
+        #
+        # output_matrix_us = np.vstack((self.us_data_spectrum.x,
+        #                               self.us_corrected_spectrum.y, self.us_fit_spectrum.y))
 
-        output_matrix_us = np.vstack((self.us_data_spectrum.x,
-                                      self.us_corrected_spectrum.y, self.us_fit_spectrum.y))
+        # TODO - Added from Chris.
+        if len(self.ds_data_spectrum.x) == len(self.ds_fit_spectrum.y):
+            output_matrix_ds = np.vstack((self.ds_data_spectrum.x,
+                                          self.ds_corrected_spectrum.y, self.ds_fit_spectrum.y))
+        else:
+            output_matrix_ds = np.vstack((self.ds_data_spectrum.x, self.ds_corrected_spectrum.y))
+
+        if len(self.us_data_spectrum.x) == len(self.us_fit_spectrum.y):
+            output_matrix_us = np.vstack((self.us_data_spectrum.x,
+                                          self.us_corrected_spectrum.y, self.us_fit_spectrum.y))
+        else:
+            output_matrix_us = np.vstack((self.us_data_spectrum.x, self.us_corrected_spectrum.y))
 
         ds_filename = filename.rsplit('.', 1)[0] + '_ds.txt'
         us_filename = filename.rsplit('.', 1)[0] + '_us.txt'

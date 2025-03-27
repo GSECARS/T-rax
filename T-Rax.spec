@@ -1,38 +1,22 @@
 # -*- mode: python -*-
+folder = 't-rax'
 
-
-import os
-import lib2to3
-
-
-block_cipher = None
-folder = os.getcwd()
-
-lib2to3_path = os.path.dirname(lib2to3.__file__)
-
-extra_datas = [
-    ("t_rax/resources", "t_rax/resources"),
-    (os.path.join(lib2to3_path, 'Grammar.txt'), 'lib2to3/'),
-    (os.path.join(lib2to3_path, 'PatternGrammar.txt'), 'lib2to3/'),
-]
-
-
-a = Analysis(['run_t_rax.py'],
+a = Analysis([os.path.join(folder, 'T-Rax.py')],
              pathex=[folder],
-             datas=extra_datas,
              hiddenimports=['scipy.special._ufuncs_cxx', 'scipy.integrate', 'scipy.integrate.quadrature',
                             'scipy.integrate.odepack', 'scipy.integrate._odepack', 'scipy.integrate._ode',
                             'scipy.integrate.quadpack', 'scipy.integrate._quadpack',
                             'scipy.integrate.vode', 'scipy.integrate._dop', 'scipy.integrate.lsoda',
-                            'h5py.h5ac', 'h5py.defs', 'h5py.utils', 'h5py._proxy', 'pkg_resources.py2_warn',
-                            'pywt._extensions._cwt'],
-             hookspath=[],
-             runtime_hooks=[],
-             excludes=['PyQt4', 'PySide'],
-             win_no_prefer_redirects=False,
-             win_private_assemblies=False,
-             cipher=block_cipher)
+                            'h5py.h5ac', 'h5py.defs', 'h5py.utils', 'h5py._proxy'],
+             hookspath=None,
+             runtime_hooks=None)
 
+## extra files for getting things to work
+a.datas += [('widget/TRaxStyle.qss', 't-rax/widget/TRaxStyle.qss', 'DATA')]
+a.datas += [('widget/NavigationStyle.qss', 't-rax/widget/NavigationStyle.qss', 'DATA')]
+
+
+pyz = PYZ(a.pure)
 
 from sys import platform as _platform
 
@@ -46,21 +30,15 @@ elif _platform == "win32" or _platform == "cygwin":
     name = "T-Rax.exe"
 elif _platform == "darwin":
     platform = "Mac64"
-    name = "run_t_rax"
+    name = "T-Rax"
 
-# getting the current version of Dioptas
-# __version__ file for executable has prevalence over versioneer output
-try:
-    with open(os.path.join('dioptas', '__version__'), 'r') as fp:
-        __version__ = fp.readline()
-except FileNotFoundError:
-    from t_rax import __version__
+import sys
+sys.path.append(a.pathex[0])
 
-from t_rax import icons_path
+from controller.MainController import get_version
+version = get_version()
 
-pyz = PYZ(a.pure, a.zipped_data,
-          cipher=block_cipher)
-
+pyz = PYZ(a.pure)
 exe = EXE(pyz,
           a.scripts,
           exclude_binaries=True,
@@ -68,8 +46,7 @@ exe = EXE(pyz,
           debug=False,
           strip=None,
           upx=True,
-          console=False,
-          icon=os.path.join(icons_path, "t_rax.ico"))
+          console=False)
 
 
 coll = COLLECT(exe,
@@ -78,9 +55,8 @@ coll = COLLECT(exe,
                a.datas,
                strip=None,
                upx=True,
-               name='T-Rax_{}_{}'.format(platform, __version__))
+               name='T-Rax_{}_{}'.format(platform, version))
 
 if _platform == "darwin":
     app = BUNDLE(coll,
-                 name='T-Rax_{}.app'.format(__version__),
-                 icon=os.path.join(icons_path, "t_rax.icns"))
+                 name='T-Rax_{}.app'.format(version))

@@ -68,7 +68,6 @@ class Roi():
         self.y_min = limits[2]
         self.y_max = limits[3]
 
-
 class RoiDataManager():
     def __init__(self, roi_num):
         self.roi_num = roi_num
@@ -121,7 +120,7 @@ class RoiDataManager():
                                    0.75 * (img_dimension[0]) - 1,
                                    (2 * ind + 1) * part_height - 1,
                                    (2 * ind + 2) * part_height - 1])
-                limits = np.round(limits).astype(np.int)
+                limits = np.round(limits)
                 rois.append(Roi(limits))
 
             self._add(img_dimension, rois)
@@ -131,6 +130,7 @@ class RoiDataManager():
         return self.get_rois(img_dimension)[index]
 
     def set_roi(self, index, img_dimension, limits):
+
         if self._exists(img_dimension):
             self._rois_list[self._get_dimension_ind(img_dimension)][index] = Roi(limits)
         else:

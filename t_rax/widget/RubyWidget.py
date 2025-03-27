@@ -18,6 +18,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from qtpy import QtWidgets, QtCore, QtGui
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QShortcut
 import pyqtgraph as pg
 
 from .BaseWidget import BaseWidget
@@ -32,6 +34,9 @@ class RubyWidget(BaseWidget, object):
 
         self.create_ruby_shortcuts()
         self.modify_graph_widget()
+
+        QShortcut(Qt.Key_Left, self, self.arrow_left)
+        QShortcut(Qt.Key_Right, self, self.arrow_right)
 
     def create_ruby_shortcuts(self):
         self.sample_position_txt = self._ruby_pressure_gb._sample_position_txt
@@ -64,6 +69,20 @@ class RubyWidget(BaseWidget, object):
 
     def remove_fitted_spectrum_from_graph(self):
         self._fitted_spectrum.clear()
+
+    def arrow_left(self):
+        current_pos = self.get_ruby_line_pos()
+
+        self.set_ruby_line_pos(float(current_pos) - 0.02)
+        new_value = self.get_ruby_line_pos()
+        self.sample_position_txt.setText("{:.2f}".format(new_value))
+
+    def arrow_right(self):
+        current_pos = self.get_ruby_line_pos()
+
+        self.set_ruby_line_pos(float(current_pos) + 0.02)
+        new_value = self.get_ruby_line_pos()
+        self.sample_position_txt.setText("{:.2f}".format(new_value))
 
 
 class RubyPressureGroupBox(QtWidgets.QGroupBox):
@@ -167,6 +186,7 @@ class RubyPressureGroupBox(QtWidgets.QGroupBox):
 
         cleanlooks = QtWidgets.QStyleFactory.create('plastique')
         self._ruby_scale_cb.setStyle(cleanlooks)
+
 
 
 def horizontal_line():
