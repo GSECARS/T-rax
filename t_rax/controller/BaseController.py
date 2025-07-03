@@ -105,7 +105,7 @@ class BaseController(QtCore.QObject):
 
         # TODO - Added from Cris
         for filename in filenames:
-            if filename is not '':
+            if filename != "":
                 self.load_data_file(filename)
                 if self.widget.batch_mode_export_rb.isChecked():
                     if len(filenames) >= 1:
@@ -138,7 +138,7 @@ class BaseController(QtCore.QObject):
             filename = filename.rsplit('.', 1)[0] + '.txt'
 
         # TODO - Added from Chris
-        if filename is not '':
+        if filename != "":
             if self.widget.batch_mode_export_rb.isChecked():
                 self.model.save_txt(filename)
 
@@ -152,7 +152,7 @@ class BaseController(QtCore.QObject):
         )
         filename = str(filename)
 
-        if filename is not '':
+        if filename != "":
             self.widget.graph_widget.save_graph(filename)
 
     def data_changed(self):

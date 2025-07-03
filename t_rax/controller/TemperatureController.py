@@ -117,7 +117,7 @@ class TemperatureController(QtCore.QObject):
                                           directory=self._exp_working_dir)
 
         for filename in filenames:
-            if filename is not '':
+            if filename != "":
                 self.model.save_txt(filename=filename)
                 self._exp_working_dir = os.path.dirname(str(filename))
                 self.model.load_data_image(str(filename))
@@ -128,7 +128,7 @@ class TemperatureController(QtCore.QObject):
             filename = open_file_dialog(self.widget, caption="Load Downstream Calibration SPE",
                                         directory=self._exp_working_dir)
 
-        if filename is not '':
+        if filename != "":
             self._exp_working_dir = os.path.dirname(filename)
             self.model.load_ds_calibration_image(filename)
 
@@ -137,7 +137,7 @@ class TemperatureController(QtCore.QObject):
             filename = open_file_dialog(self.widget, caption="Load Upstream Calibration SPE",
                                         directory=self._exp_working_dir)
 
-        if filename is not '':
+        if filename != "":
             self._exp_working_dir = os.path.dirname(filename)
             self.model.load_us_calibration_image(filename)
 
@@ -154,7 +154,7 @@ class TemperatureController(QtCore.QObject):
             filename = open_file_dialog(self.widget, caption="Load Downstream Etalon Spectrum",
                                         directory=self._exp_working_dir)
 
-        if filename is not '':
+        if filename != "":
             self._exp_working_dir = os.path.dirname(filename)
             self.model.load_ds_etalon_spectrum(filename)
 
@@ -163,7 +163,7 @@ class TemperatureController(QtCore.QObject):
             filename = open_file_dialog(self.widget, caption="Load Upstream Etalon Spectrum",
                                         directory=self._exp_working_dir)
 
-        if filename is not '':
+        if filename != "":
             self._exp_working_dir = os.path.dirname(filename)
             self.model.load_us_etalon_spectrum(filename)
 
@@ -172,7 +172,7 @@ class TemperatureController(QtCore.QObject):
             filename = save_file_dialog(self.widget, caption="Save setting file",
                                         directory=self._setting_working_dir)
 
-        if filename is not '':
+        if filename != "":
             self._setting_working_dir = os.path.dirname(filename)
             self.model.save_setting(filename)
             self.update_setting_combobox()
@@ -182,7 +182,7 @@ class TemperatureController(QtCore.QObject):
             filename = open_file_dialog(self.widget, caption="Load setting file",
                                         directory=self._setting_working_dir)
 
-        if filename is not '':
+        if filename != "":
             self._setting_working_dir = os.path.dirname(filename)
             self.model.load_setting(filename)
             self.update_setting_combobox()
@@ -195,7 +195,7 @@ class TemperatureController(QtCore.QObject):
                 directory=os.path.join(self._exp_working_dir,
                                        '.'.join(self.model.data_img_file.filename.split(".")[:-1]) + ".txt")
             )
-        if filename is not '':
+        if filename != "":
             self.model.save_txt(filename)
 
     def save_graph_btn_clicked(self, filename=None):
@@ -209,7 +209,7 @@ class TemperatureController(QtCore.QObject):
             )
         filename = str(filename)
 
-        if filename is not '':
+        if filename != "":
             self.widget.graph_widget.save_graph(filename)
 
     def update_setting_combobox(self):
@@ -415,7 +415,7 @@ class TemperatureController(QtCore.QObject):
 
     def setup_temperature_file_folder_monitor(self):
         if epics is not None and eps.epics_settings['T_folder'] is not None \
-                and eps.epics_settings['T_folder'] is not 'None':
+                and eps.epics_settings['T_folder'] != 'None':
             # epics.camonitor_clear(eps.epics_settings['T_folder'])
             epics.camonitor(eps.epics_settings['T_folder'], callback=self.temperature_file_folder_changed)
 
