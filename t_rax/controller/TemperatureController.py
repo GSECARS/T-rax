@@ -27,6 +27,7 @@ from ..model.TemperatureModel import TemperatureModel
 from ..model import epics_settings as eps
 from .NewFileInDirectoryWatcher import NewFileInDirectoryWatcher
 import numpy as np
+import t_rax.model
 
 try:
     import epics
@@ -437,14 +438,18 @@ class TemperatureController(QtCore.QObject):
         self.setup_epics_dialog.temperature_file_folder_pv = eps.epics_settings['T_folder']
         self.setup_epics_dialog.exec_()
         if self.setup_epics_dialog.approved:
-            with open('model/epics_settings.py', 'w') as outfile:
+            # Get the correct path to the epics_settings.py file
+            model_dir = os.path.dirname(t_rax.model.__file__)
+            epics_settings_path = os.path.join(model_dir, 'epics_settings.py')
+            
+            with open(epics_settings_path, 'w') as outfile:
                 outfile.write('epics_settings = {\n')
                 outfile.write("    'us_last_temp': '" + self.setup_epics_dialog.us_temp_pv + "',\n")
                 outfile.write("    'ds_last_temp': '" + self.setup_epics_dialog.ds_temp_pv + "',\n")
                 outfile.write("    'us_last_int': '" + self.setup_epics_dialog.us_int_pv + "',\n")
                 outfile.write("    'ds_last_int': '" + self.setup_epics_dialog.ds_int_pv + "',\n")
                 outfile.write("    'file_counter': '" + self.setup_epics_dialog.file_counter_pv + "',\n")
-                outfile.write("    'T_folder': '" + self.setup_epics_dialog.temperature_file_folder_pv + ",\n")
+                outfile.write("    'T_folder': '" + self.setup_epics_dialog.temperature_file_folder_pv + "',\n")
                 outfile.write("}\n")
             eps.epics_settings['us_last_temp'] = self.setup_epics_dialog.us_temp_pv
             eps.epics_settings['ds_last_temp'] = self.setup_epics_dialog.ds_temp_pv
