@@ -41,20 +41,10 @@ Updated information for creating a new conda environment and installing all requ
 ```bash
 conda create -n traxENV python=3.13
 conda activate traxENV
-pip install qtpy pyqt5 pyqtgraph==0.12.0 lmfit h5py scipy pyshortcuts pyepics numpy scipy python-dateutil pillow
+pip install qtpy pyqt5 pyqtgraph lmfit h5py scipy pyshortcuts pyepics numpy scipy python-dateutil pillow
 
 ```
     
 The program itself can then be run by going into the "t-rax" directory and type:
     
     python run_t_rax.py
-
-
-
-
-
-
-
-
-    
-
