@@ -343,16 +343,37 @@ class TemperatureController(QtCore.QObject):
         self.widget.graph_widget.plot_ds_time_lapse(range(0, len(ds_temperature)), ds_temperature)
         self.widget.graph_widget.plot_us_time_lapse(range(0, len(us_temperature)), us_temperature)
 
-        self.widget.graph_widget.update_time_lapse_ds_temperature_txt(np.mean(ds_temperature),
-                                                                      np.std(ds_temperature))
+        # Filter out invalid values (NaN, inf) and empty arrays
+        valid_ds = ds_temperature[np.isfinite(ds_temperature)] if len(ds_temperature) > 0 else np.array([])
+        valid_us = us_temperature[np.isfinite(us_temperature)] if len(us_temperature) > 0 else np.array([])
 
-        self.widget.graph_widget.update_time_lapse_us_temperature_txt(np.mean(us_temperature),
-                                                                      np.std(us_temperature))
+        if len(valid_ds) > 0:
+            ds_mean = np.mean(valid_ds)
+            ds_std = np.std(valid_ds) if len(valid_ds) > 1 else 0.0
+        else:
+            ds_mean = 0.0
+            ds_std = 0.0
 
-        self.widget.graph_widget.update_time_lapse_combined_temperature_txt(
-            np.mean(ds_temperature + us_temperature),
-            np.std(ds_temperature + us_temperature)
-        )
+        if len(valid_us) > 0:
+            us_mean = np.mean(valid_us)
+            us_std = np.std(valid_us) if len(valid_us) > 1 else 0.0
+        else:
+            us_mean = 0.0
+            us_std = 0.0
+
+        self.widget.graph_widget.update_time_lapse_ds_temperature_txt(ds_mean, ds_std)
+        self.widget.graph_widget.update_time_lapse_us_temperature_txt(us_mean, us_std)
+
+        # Calculate combined statistics only if both arrays have valid data
+        if len(valid_ds) > 0 and len(valid_us) > 0:
+            combined_temps = np.concatenate([valid_ds, valid_us])
+            combined_mean = np.mean(combined_temps)
+            combined_std = np.std(combined_temps) if len(combined_temps) > 1 else 0.0
+        else:
+            combined_mean = 0.0
+            combined_std = 0.0
+
+        self.widget.graph_widget.update_time_lapse_combined_temperature_txt(combined_mean, combined_std)
 
     def widget_rois_changed(self, roi_list):
         if self.model.has_data():

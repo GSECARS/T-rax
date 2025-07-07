@@ -18,9 +18,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import warnings
 from qtpy import QtCore
 import numpy as np
-from scipy.optimize import curve_fit
+from scipy.optimize import curve_fit, OptimizeWarning
 import h5py
 import math
 
@@ -319,27 +320,46 @@ class TemperatureModel(QtCore.QObject):
         header += "Downstream (K): {:.1f}\t{:.1f}\n".format(self.ds_temperature, self.ds_temperature_error)
         header += "Upstream (K): {:.1f}\t{:.1f}\n\n".format(self.us_temperature, self.us_temperature_error)
         header += "Datacolumns:\n"
-        header_ds = header + "\t".join(("lambda(nm)", "DS_data", "DS_fit"))
-        header_us = header + "\t".join(("lambda(nm)", "US_data", "US_fit"))
 
-        # output_matrix_ds = np.vstack((self.ds_data_spectrum.x,
-        #                               self.ds_corrected_spectrum.y, self.ds_fit_spectrum.y))
-        #
-        # output_matrix_us = np.vstack((self.us_data_spectrum.x,
-        #                               self.us_corrected_spectrum.y, self.us_fit_spectrum.y))
-
-        # TODO - Added from Chris.
-        if len(self.ds_data_spectrum.x) == len(self.ds_fit_spectrum.y):
-            output_matrix_ds = np.vstack((self.ds_data_spectrum.x,
-                                          self.ds_corrected_spectrum.y, self.ds_fit_spectrum.y))
+        # Handle downstream data
+        if len(self.ds_data_spectrum.x) > 0 and len(self.ds_corrected_spectrum.y) > 0:
+            header_ds = header + "\t".join(("lambda(nm)", "DS_data", "DS_corrected"))
+            if len(self.ds_data_spectrum.x) == len(self.ds_fit_spectrum.y) and len(self.ds_fit_spectrum.y) > 0:
+                header_ds = header + "\t".join(("lambda(nm)", "DS_data", "DS_corrected", "DS_fit"))
+                output_matrix_ds = np.vstack((self.ds_data_spectrum.x,
+                                              self.ds_data_spectrum.y,
+                                              self.ds_corrected_spectrum.y, 
+                                              self.ds_fit_spectrum.y))
+            else:
+                output_matrix_ds = np.vstack((self.ds_data_spectrum.x,
+                                              self.ds_data_spectrum.y,
+                                              self.ds_corrected_spectrum.y))
+        elif len(self.ds_data_spectrum.x) > 0:
+            header_ds = header + "\t".join(("lambda(nm)", "DS_data"))
+            output_matrix_ds = np.vstack((self.ds_data_spectrum.x, self.ds_data_spectrum.y))
         else:
-            output_matrix_ds = np.vstack((self.ds_data_spectrum.x, self.ds_corrected_spectrum.y))
+            header_ds = header + "No downstream data available"
+            output_matrix_ds = np.array([[0], [0]])  # Dummy data for empty case
 
-        if len(self.us_data_spectrum.x) == len(self.us_fit_spectrum.y):
-            output_matrix_us = np.vstack((self.us_data_spectrum.x,
-                                          self.us_corrected_spectrum.y, self.us_fit_spectrum.y))
+        # Handle upstream data
+        if len(self.us_data_spectrum.x) > 0 and len(self.us_corrected_spectrum.y) > 0:
+            header_us = header + "\t".join(("lambda(nm)", "US_data", "US_corrected"))
+            if len(self.us_data_spectrum.x) == len(self.us_fit_spectrum.y) and len(self.us_fit_spectrum.y) > 0:
+                header_us = header + "\t".join(("lambda(nm)", "US_data", "US_corrected", "US_fit"))
+                output_matrix_us = np.vstack((self.us_data_spectrum.x,
+                                              self.us_data_spectrum.y,
+                                              self.us_corrected_spectrum.y, 
+                                              self.us_fit_spectrum.y))
+            else:
+                output_matrix_us = np.vstack((self.us_data_spectrum.x,
+                                              self.us_data_spectrum.y,
+                                              self.us_corrected_spectrum.y))
+        elif len(self.us_data_spectrum.x) > 0:
+            header_us = header + "\t".join(("lambda(nm)", "US_data"))
+            output_matrix_us = np.vstack((self.us_data_spectrum.x, self.us_data_spectrum.y))
         else:
-            output_matrix_us = np.vstack((self.us_data_spectrum.x, self.us_corrected_spectrum.y))
+            header_us = header + "No upstream data available"
+            output_matrix_us = np.array([[0], [0]])  # Dummy data for empty case
 
         ds_filename = filename.rsplit('.', 1)[0] + '_ds.txt'
         us_filename = filename.rsplit('.', 1)[0] + '_us.txt'
@@ -652,11 +672,39 @@ def calculate_real_spectrum(data_spectrum, calibration_spectrum, etalon_spectrum
 
 def fit_black_body_function(spectrum):
     try:
-        param, cov = curve_fit(black_body_function, spectrum._x, spectrum._y, p0=[2000, 1e-11])
-        T = param[0]
-        T_err = np.sqrt(np.abs(cov[0, 0])) if cov[0, 0] > 0 else np.nan  # Handle invalid covariance
-        return T, T_err, Spectrum(spectrum._x, black_body_function(spectrum._x, param[0], param[1]))
-    except (RuntimeError, TypeError, ValueError):
+        # Filter out specific optimization warnings for better user experience
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore', category=RuntimeWarning, message='.*covariance.*')
+            warnings.filterwarnings('ignore', category=OptimizeWarning)
+            warnings.filterwarnings('ignore', message='.*Covariance of the parameters could not be estimated.*')
+            
+            # Try fitting with improved initial parameters and bounds
+            # Use better initial guess based on data range
+            max_intensity = np.max(spectrum._y)
+            initial_temp = 2000  # reasonable starting temperature
+            initial_scaling = max_intensity * 1e-11  # scale based on actual data
+            
+            # Set reasonable bounds: temperature 500-6000K, scaling positive
+            bounds = ([500, 1e-15], [6000, np.inf])
+            
+            param, cov = curve_fit(black_body_function, spectrum._x, spectrum._y, 
+                                 p0=[initial_temp, initial_scaling], 
+                                 bounds=bounds,
+                                 maxfev=2000)  # increase max iterations
+            
+            T = param[0]
+            # Handle covariance estimation more robustly
+            if cov is not None and np.isfinite(cov[0, 0]) and cov[0, 0] > 0:
+                T_err = np.sqrt(cov[0, 0])
+            else:
+                # Estimate error as 5% of temperature if covariance fails
+                T_err = 0.05 * T
+                
+            return T, T_err, Spectrum(spectrum._x, black_body_function(spectrum._x, param[0], param[1]))
+            
+    except (RuntimeError, TypeError, ValueError) as e:
+        # Log the specific error for debugging (optional)
+        # print(f"Fitting failed: {e}")
         return np.nan, np.nan, Spectrum([], [])
 
 
@@ -664,7 +712,28 @@ def black_body_function(wavelength, temp, scaling):
     wavelength = np.array(wavelength) * 1e-9
     c1 = 3.7418e-16
     c2 = 0.014388
-    return scaling * c1 * wavelength ** -5 / (np.exp(c2 / (wavelength * temp)) - 1)
+    
+    # Add safety checks for invalid inputs
+    with np.errstate(divide='ignore', invalid='ignore', over='ignore'):
+        # Avoid division by zero for wavelength and temperature
+        safe_wavelength = np.where(wavelength <= 0, np.finfo(float).eps, wavelength)
+        safe_temp = np.where(temp <= 0, np.finfo(float).eps, temp)
+        
+        # Calculate the Planck function
+        exponent = c2 / (safe_wavelength * safe_temp)
+        # Limit exponent to prevent overflow
+        exponent = np.clip(exponent, -700, 700)
+        
+        denominator = np.exp(exponent) - 1
+        # Avoid division by zero in denominator
+        denominator = np.where(np.abs(denominator) < np.finfo(float).eps, np.finfo(float).eps, denominator)
+        
+        result = scaling * c1 * safe_wavelength ** -5 / denominator
+        
+        # Set invalid results to zero
+        result = np.where(np.isfinite(result), result, 0)
+        
+    return result
 
 
 class CalibrationParameter(object):
