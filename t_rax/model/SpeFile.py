@@ -29,13 +29,13 @@ num_frames - number of frames collected
 exposure_time
 
 img - 2d data if num_frames==1
-      list of 2d data if num_frames>1  
+      list of 2d data if num_frames>1
 
 x_calibration - wavelength information of x-axis
 
 
 
-the data will be automatically loaded and all important parameters and the data 
+the data will be automatically loaded and all important parameters and the data
 can be requested from the object.
 """
 
@@ -58,25 +58,35 @@ class SpeFile(object):
         """"""
         self.filename = filename
         self.debug = debug
-        self._fid = open(filename, 'rb')
+        self._fid = open(filename, "rb")
+        self.version = self._get_version()
         self._read_parameter()
         self._read_img()
         self._fid.close()
+
+    def _get_version(self):
+        self.xml_offset = self._read_at(678, 1, np.int64)[0]
+        if self.xml_offset == 0:
+            return 2
+        else:
+            return 3
 
     def _read_parameter(self):
         """Reads in size and datatype. Decides whether it should check in the binary
         header (version 2) or in the xml-footer for the experimental parameters"""
         self._read_size()
         self._read_datatype()
-        self.xml_offset = self._read_at(678, 1, np.long)[0]
-        if self.xml_offset <= 0:  # means that there is no XML present, hence it is a pre 3.0 version of the SPE
-            # file
+        if self.version == 2:
             self._read_parameter_from_header()
-        else:
+        elif self.version == 3:
             try:
                 self._read_parameter_from_dom()
-            except: # if fails for any reason, try reading from the header
+            except ValueError:
+                print("Error reading SPE file: %s" % self.filename)
+                print("Trying to read parameters from header")
                 self._read_parameter_from_header()
+        else:
+            raise ValueError("Unknown SPE file version: %s" % self.version)
 
     def _read_size(self):
         """reads the dimensions of the Model from the header into the object
@@ -119,16 +129,16 @@ class SpeFile(object):
         """Reads the collection time from the header into the date_time field"""
         rawdate = self._read_at(20, 9, np.int8)
         rawtime = self._read_at(172, 6, np.int8)
-        strdate = ''.join([chr(i) for i in rawdate])
-        strdate += ''.join([chr(i) for i in rawtime])
+        strdate = "".join([chr(i) for i in rawdate])
+        strdate += "".join([chr(i) for i in rawtime])
         import locale
-        locale.setlocale(locale.LC_TIME, 'en_US.utf8')
+
+        locale.setlocale(locale.LC_TIME, "en_US.utf8")
         try:
             self.date_time = datetime.datetime.strptime(str(strdate), "%d%b%Y%H%M%S")
         except:
-            print('WARNING: could note read datetime from SPE_FILE')
+            print("WARNING: could note read datetime from SPE_FILE")
             self.date_time = datetime.datetime.now()
-
 
     def _read_calibration_from_header(self):
         """Reads the calibration from the header into the x_calibration field"""
@@ -144,8 +154,8 @@ class SpeFile(object):
     def _read_detector_from_header(self):
         """Sets the detector value to unspecified, because the detector is not
         specified in the binary header. Only in the xml footer of version 3 SPE
-        files """
-        self.detector = 'unspecified'
+        files"""
+        self.detector = "unspecified"
 
     def _read_grating_from_header(self):
         """Reads grating position from the header into the grating field"""
@@ -167,7 +177,12 @@ class SpeFile(object):
     def _create_dom_from_xml(self):
         """Creates a DOM representation of the xml footer and saves it in the
         dom field"""
-        self.dom = parseString(self.xml_string)
+        try:
+            self.dom = parseString(self.xml_string)
+        except:
+            raise ValueError(
+                "Could not parse XML footer of SPE file: %s" % self.filename
+            )
 
     def _get_xml_string(self):
         """Reads out the xml string from the file end"""
@@ -175,75 +190,106 @@ class SpeFile(object):
         self.xml_string = self._fid.read()
 
         if self.debug:
-            fid = open(self.filename+'.xml', 'w')
+            fid = open(self.filename + ".xml", "w")
             for line in self.xml_string:
                 fid.write(line)
             fid.close()
 
     def _read_date_time_from_dom(self):
         """Reads the time of collection and saves it date_time field"""
-        date_time_str = self.dom.getElementsByTagName('Origin')[0].getAttribute('created')
+        date_time_str = self.dom.getElementsByTagName("Origin")[0].getAttribute(
+            "created"
+        )
         self.date_time = parser.parse(date_time_str)
 
     def _read_calibration_from_dom(self):
-        """Reads the x calibration of the image from the xml footer and saves 
+        """Reads the x calibration of the image from the xml footer and saves
         it in the x_calibration field"""
         spe_format = self.dom.childNodes[0]
-        calibrations = spe_format.getElementsByTagName('Calibrations')[0]
-        wavelengthmapping = calibrations.getElementsByTagName('WavelengthMapping')[0]
-        wavelengths = wavelengthmapping.getElementsByTagName('Wavelength')[0]
+        calibrations = spe_format.getElementsByTagName("Calibrations")[0]
+        wavelengthmapping = calibrations.getElementsByTagName("WavelengthMapping")[0]
+        wavelengths = wavelengthmapping.getElementsByTagName("Wavelength")[0]
         wavelength_values = wavelengths.childNodes[0]
-        self.x_calibration = np.array([float(i) for i in wavelength_values.toxml().split(',')])
+        self.x_calibration = np.array(
+            [float(i) for i in wavelength_values.toxml().split(",")]
+        )
 
     def _read_exposure_from_dom(self):
         """Reads th exposure time of the experiment into the exposure_time field"""
-        if len(self.dom.getElementsByTagName('Experiment')) != 1:  # check if it is a real v3.0 file
-            if len(self.dom.getElementsByTagName('ShutterTiming')) == 1:  #check if it is a pixis detector
-                self._exposure_time = self.dom.getElementsByTagName('ExposureTime')[0].childNodes[0]
-                self.exposure_time = np.float(self._exposure_time.toxml()) / 1000.0
+        if (
+            len(self.dom.getElementsByTagName("Experiment")) != 1
+        ):  # check if it is a real v3.0 file
+            if (
+                len(self.dom.getElementsByTagName("ShutterTiming")) == 1
+            ):  # check if it is a pixis detector
+                self._exposure_time = self.dom.getElementsByTagName("ExposureTime")[
+                    0
+                ].childNodes[0]
+                self.exposure_time = float(self._exposure_time.toxml()) / 1000.0
             else:
                 # self._exposure_time = self.dom.getElementsByTagName('ReadoutControl')[0]. \
                 #     getElementsByTagName('Time')[0].childNodes[0].nodeValue
-                # self._exposure_time = np.float(self._exposure_time)/1000000000
-                self._exposure_time = self.dom.getElementsByTagName('Gating')[0]. \
-                    getElementsByTagName('RepetitiveGate')[0].getElementsByTagName('Pulse')[0].getAttribute('width')
-                self._exposure_time = np.float(self._exposure_time)/1000000000
-                self._accumulations = self.dom.getElementsByTagName('Accumulations')[0].childNodes[0].nodeValue
-                self.exposure_time = np.float(self._exposure_time) * np.float(self._accumulations)
+                # self._exposure_time = float(self._exposure_time)/1000000000
+                self._exposure_time = (
+                    self.dom.getElementsByTagName("Gating")[0]
+                    .getElementsByTagName("RepetitiveGate")[0]
+                    .getElementsByTagName("Pulse")[0]
+                    .getAttribute("width")
+                )
+                self._exposure_time = float(self._exposure_time) / 1000000000
+                self._accumulations = (
+                    self.dom.getElementsByTagName("Accumulations")[0]
+                    .childNodes[0]
+                    .nodeValue
+                )
+                self.exposure_time = float(self._exposure_time) * float(
+                    self._accumulations
+                )
         else:  # this is searching for legacy experiment:
-            self._exposure_time = self.dom.getElementsByTagName('LegacyExperiment')[0]. \
-                getElementsByTagName('Experiment')[0]. \
-                getElementsByTagName('CollectionParameters')[0]. \
-                getElementsByTagName('Exposure')[0].attributes["value"].value
-            self.exposure_time = np.float(self._exposure_time.split()[0])
+            self._exposure_time = (
+                self.dom.getElementsByTagName("LegacyExperiment")[0]
+                .getElementsByTagName("Experiment")[0]
+                .getElementsByTagName("CollectionParameters")[0]
+                .getElementsByTagName("Exposure")[0]
+                .attributes["value"]
+                .value
+            )
+            self.exposure_time = float(self._exposure_time.split()[0])
 
     def _read_detector_from_dom(self):
         """Reads the detector information from the dom object"""
-        self._camera = self.dom.getElementsByTagName('Camera')
+        self._camera = self.dom.getElementsByTagName("Camera")
         if len(self._camera) >= 1:
-            self.detector = self._camera[0].getAttribute('model')
+            self.detector = self._camera[0].getAttribute("model")
         else:
-            self.detector = 'unspecified'
+            self.detector = "unspecified"
 
     def _read_grating_from_dom(self):
         """Reads the type of grating from the dom Model"""
         try:
-            self._grating = self.dom.getElementsByTagName('Devices')[0]. \
-                getElementsByTagName('Spectrometer')[0]. \
-                getElementsByTagName('Grating')[0]. \
-                getElementsByTagName('Selected')[0].childNodes[0].toxml()
-            self.grating = self._grating.split('[')[1].split(']')[0].replace(',', ' ')
+            self._grating = (
+                self.dom.getElementsByTagName("Devices")[0]
+                .getElementsByTagName("Spectrometer")[0]
+                .getElementsByTagName("Grating")[0]
+                .getElementsByTagName("Selected")[0]
+                .childNodes[0]
+                .toxml()
+            )
+            self.grating = self._grating.split("[")[1].split("]")[0].replace(",", " ")
         except IndexError:
             self._read_grating_from_header()
 
     def _read_center_wavelength_from_dom(self):
         """Reads the center wavelength from the dom Model and saves it center_wavelength field"""
         try:
-            self._center_wavelength = self.dom.getElementsByTagName('Devices')[0]. \
-                getElementsByTagName('Spectrometer')[0]. \
-                getElementsByTagName('Grating')[0]. \
-                getElementsByTagName('CenterWavelength')[0]. \
-                childNodes[0].toxml()
+            self._center_wavelength = (
+                self.dom.getElementsByTagName("Devices")[0]
+                .getElementsByTagName("Spectrometer")[0]
+                .getElementsByTagName("Grating")[0]
+                .getElementsByTagName("CenterWavelength")[0]
+                .childNodes[0]
+                .toxml()
+            )
             self.center_wavelength = float(self._center_wavelength)
         except IndexError:
             self._read_center_wavelength_from_header()
@@ -256,34 +302,43 @@ class SpeFile(object):
         For FullSensor
         roi_x,roi_y, roi_width, roi_height"""
         try:
-            self.roi_modus = str(self.dom.getElementsByTagName('ReadoutControl')[0]. \
-                                 getElementsByTagName('RegionsOfInterest')[0]. \
-                                 getElementsByTagName('Selection')[0]. \
-                                 childNodes[0].toxml())
-            if self.roi_modus == 'CustomRegions':
-                self.roi_dom = self.dom.getElementsByTagName('ReadoutControl')[0]. \
-                    getElementsByTagName('RegionsOfInterest')[0]. \
-                    getElementsByTagName('CustomRegions')[0]. \
-                    getElementsByTagName('RegionOfInterest')[0]
-                self.roi_dom_width = self.dom.getElementsByTagName('DataFormat')[0]. \
-                    getElementsByTagName('DataBlock')[0]. \
-                    getElementsByTagName('DataBlock')[0]
-                self.roi_x = int(self.roi_dom.attributes['x'].value)
-                self.roi_y = int(self.roi_dom.attributes['y'].value)
-                self.roi_width = int(self.roi_dom_width.attributes['width'].value)
-                self.roi_height = int(self.roi_dom.attributes['height'].value)
-                self.roi_x_binning = int(self.roi_dom.attributes['xBinning'].value)
-                self.roi_y_binning = int(self.roi_dom.attributes['yBinning'].value)
-            elif self.roi_modus == 'FullSensor':
+            self.roi_modus = str(
+                self.dom.getElementsByTagName("ReadoutControl")[0]
+                .getElementsByTagName("RegionsOfInterest")[0]
+                .getElementsByTagName("Selection")[0]
+                .childNodes[0]
+                .toxml()
+            )
+            if self.roi_modus == "CustomRegions":
+                self.roi_dom = (
+                    self.dom.getElementsByTagName("ReadoutControl")[0]
+                    .getElementsByTagName("RegionsOfInterest")[0]
+                    .getElementsByTagName("CustomRegions")[0]
+                    .getElementsByTagName("RegionOfInterest")[0]
+                )
+                self.roi_dom_width = (
+                    self.dom.getElementsByTagName("DataFormat")[0]
+                    .getElementsByTagName("DataBlock")[0]
+                    .getElementsByTagName("DataBlock")[0]
+                )
+                self.roi_x = int(self.roi_dom.attributes["x"].value)
+                self.roi_y = int(self.roi_dom.attributes["y"].value)
+                self.roi_width = int(self.roi_dom_width.attributes["width"].value)
+                self.roi_height = int(self.roi_dom.attributes["height"].value)
+                self.roi_x_binning = int(self.roi_dom.attributes["xBinning"].value)
+                self.roi_y_binning = int(self.roi_dom.attributes["yBinning"].value)
+            elif self.roi_modus == "FullSensor":
                 self.roi_x = 0
                 self.roi_y = 0
                 self.roi_width = self._xdim
                 self.roi_height = self._ydim
-            elif self.roi_modus == 'LineSensor':
-                self.roi_dom_width = self.dom.getElementsByTagName('DataFormat')[0]. \
-                                        getElementsByTagName('DataBlock')[0].\
-                                        getElementsByTagName('DataBlock')[0]
-                self.roi_width = int(self.roi_dom_width.attributes['width'].value)
+            elif self.roi_modus == "LineSensor":
+                self.roi_dom_width = (
+                    self.dom.getElementsByTagName("DataFormat")[0]
+                    .getElementsByTagName("DataBlock")[0]
+                    .getElementsByTagName("DataBlock")[0]
+                )
+                self.roi_width = int(self.roi_dom_width.attributes["width"].value)
                 self.roi_height = 1
                 self.roi_x = 0
                 self.roi_y = 0
@@ -298,18 +353,25 @@ class SpeFile(object):
 
     def _read_num_combined_frames_from_dom(self):
         try:
-            self.frame_combination = self.dom.getElementsByTagName('Experiment')[0]. \
-                getElementsByTagName('Devices')[0]. \
-                getElementsByTagName('Cameras')[0]. \
-                getElementsByTagName('FrameCombination')[0]
-            self.num_frames_combined = int(self.frame_combination.getElementsByTagName('FramesCombined')[0]. \
-                                           childNodes[0].toxml())
+            self.frame_combination = (
+                self.dom.getElementsByTagName("Experiment")[0]
+                .getElementsByTagName("Devices")[0]
+                .getElementsByTagName("Cameras")[0]
+                .getElementsByTagName("FrameCombination")[0]
+            )
+            self.num_frames_combined = int(
+                self.frame_combination.getElementsByTagName("FramesCombined")[0]
+                .childNodes[0]
+                .toxml()
+            )
         except IndexError:
             self._read_num_combined_frames_from_header()
 
     def _select_wavelength_from_roi(self):
         try:
-            self.x_calibration = self.x_calibration[self.roi_x: self.roi_x + self.roi_width]
+            self.x_calibration = self.x_calibration[
+                self.roi_x : self.roi_x + self.roi_width
+            ]
         except AttributeError:
             print("SPE File bad!")
 
@@ -365,9 +427,15 @@ class SpeFile(object):
                 try:
                     base_ind = max(max(np.where(xdata <= w)))
                     if base_ind < len(xdata) - 1:
-                        result.append(int(np.round((w - xdata[base_ind]) / \
-                                                   (xdata[base_ind + 1] - xdata[base_ind]) \
-                                                   + base_ind)))
+                        result.append(
+                            int(
+                                np.round(
+                                    (w - xdata[base_ind])
+                                    / (xdata[base_ind + 1] - xdata[base_ind])
+                                    + base_ind
+                                )
+                            )
+                        )
                     else:
                         result.append(base_ind)
                 except:
@@ -375,9 +443,13 @@ class SpeFile(object):
             return np.array(result)
         except TypeError:
             base_ind = max(max(np.where(xdata <= wavelength)))
-            return int(np.round((wavelength - xdata[base_ind]) / \
-                                (xdata[base_ind + 1] - xdata[base_ind]) \
-                                + base_ind))
+            return int(
+                np.round(
+                    (wavelength - xdata[base_ind])
+                    / (xdata[base_ind + 1] - xdata[base_ind])
+                    + base_ind
+                )
+            )
 
     def get_wavelength_from(self, index):
         if isinstance(index, list):
@@ -388,15 +460,18 @@ class SpeFile(object):
         else:
             return self.x_calibration[index]
 
-
     def get_dimension(self):
         """Returns (xdim, ydim)"""
         return (self._xdim, self._ydim)
 
     def get_roi(self):
         """Returns the ROI which was defined by WinSpec or Lightfield for datacollection"""
-        return [self.roi_x, self.roi_x + self.roi_width - 1,
-                self.roi_y, self.roi_y + self.roi_height - 1]
+        return [
+            self.roi_x,
+            self.roi_x + self.roi_width - 1,
+            self.roi_y,
+            self.roi_y + self.roi_height - 1,
+        ]
 
     def get_file_size(self):
         self._fid.seek(0, 2)

@@ -290,7 +290,7 @@ class RoiImageWidget(QtWidgets.QWidget):
         dif = pos - lastPos
         dif *= -1
         ## Ignore axes if mouse is disabled
-        mouseEnabled = np.array(self.pg_viewbox.state['mouseEnabled'], dtype=np.float)
+        mouseEnabled = np.array(self.pg_viewbox.state['mouseEnabled'], dtype=float)
         mask = mouseEnabled.copy()
         if axis is not None:
             mask[1 - axis] = 0.0
