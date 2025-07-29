@@ -118,9 +118,9 @@ class HistogramLUTItem(GraphicsWidget):
         self.vb.sigRangeChanged.connect(self.viewRangeChanged)
         self.plot = PlotDataItem()
         if self.orientation == 'horizontal':
-            self.plot.setLogMode(yMode=True, xMode=False)
+            self.plot.setLogMode(yState=True, xState=False)
         elif self.orientation == 'vertical':
-            self.plot.setLogMode(yMode=False, xMode=True)
+            self.plot.setLogMode(yState=False, xState=True)
             self.vb.invertX(True)
         self.vb.autoRange()
         self.fillHistogram(fillHistogram)
