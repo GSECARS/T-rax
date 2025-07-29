@@ -14,13 +14,13 @@ Maintainer
 ===
 
 Clemens Prescher (clemens.prescher@gmail.com)  
-Center for Advanced Radiation Sources, University of Chicago
+Institut für Geo- und Umweltnaturwissenschaften, Universität Freiburg, Germany
 
 
 Requirements
 ===
 
-- Python 2.7
+- Python 3
 - qtpy
 - numpy
 - scipy
@@ -28,7 +28,9 @@ Requirements
 - dateutils
 - lmfit
 - h5py
-    
+- pyshortcuts
+- pyqt6
+
 Installation
 ===
 
