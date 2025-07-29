@@ -34,9 +34,9 @@ colors = {
     'data_pen': '#ffffff',
     'data_brush': '#FFF',
     'fit_pen': 'r',
-    'downstream': 'FFFF00',
-    'upstream': 'FF9900',
-    'combined': '66FFFF'
+    'downstream': '#FFFF00',
+    'upstream': '#FF9900',
+    'combined': '#66FFFF'
 }
 
 export_colors = {
