@@ -506,8 +506,8 @@ class SingleTemperatureModel(QtCore.QObject):
 
         self.calibration_parameter = CalibrationParameter()
 
-        self.temperature = np.NaN
-        self.temperature_error = np.NaN
+        self.temperature = np.nan
+        self.temperature_error = np.nan
         self.fit_spectrum = Spectrum([], [])
 
     @property
@@ -547,8 +547,8 @@ class SingleTemperatureModel(QtCore.QObject):
         self.corrected_spectrum = Spectrum([], [])
         self.fit_spectrum = Spectrum([], [])
 
-        self.temperature = np.NaN
-        self.temperature_error = np.NaN
+        self.temperature = np.nan
+        self.temperature_error = np.nan
         self.fit_spectrum = Spectrum([], [])
         self.data_changed.emit()
 
@@ -620,8 +620,8 @@ class SingleTemperatureModel(QtCore.QObject):
             self.temperature, self.temperature_error, self.fit_spectrum = \
                 fit_black_body_function(self.corrected_spectrum)
         else:
-            self.temperature = np.NaN
-            self.temperature_error = np.NaN
+            self.temperature = np.nan
+            self.temperature_error = np.nan
             self.fit_spectrum = Spectrum([], [])
 
 
@@ -631,7 +631,7 @@ class SingleTemperatureModel(QtCore.QObject):
 
 def calculate_real_spectrum(data_spectrum, calibration_spectrum, etalon_spectrum):
     response_y = calibration_spectrum._y / etalon_spectrum._y
-    response_y[np.where(response_y == 0)] = np.NaN
+    response_y[np.where(response_y == 0)] = np.nan
     corrected_y = data_spectrum._y / response_y
     corrected_y = corrected_y / np.max(corrected_y) * np.max(data_spectrum._y)
     return Spectrum(data_spectrum._x, corrected_y)
@@ -645,7 +645,7 @@ def fit_black_body_function(spectrum):
 
         return T, T_err, Spectrum(spectrum._x, black_body_function(spectrum._x, param[0], param[1]))
     except (RuntimeError, TypeError, ValueError):
-        return np.NaN, np.NaN, Spectrum([], [])
+        return np.nan, np.nan, Spectrum([], [])
 
 
 def black_body_function(wavelength, temp, scaling):

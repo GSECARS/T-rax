@@ -225,14 +225,14 @@ class TemperatureSpectrumWidget(QtWidgets.QWidget):
     def update_us_roi_max_txt(self, roi_max, format_max=65536):
         self._us_roi_max_txt_item.setText('Max Int {0:.0f}'.format(roi_max),
                                           size='18pt',
-                                          color='33CC00',
+                                          color='#33CC00',
                                           justify='right')
         self._us_intensity_indicator.set_intensity(float(roi_max) / format_max)
 
     def update_ds_roi_max_txt(self, roi_max, format_max=65536):
         self._ds_roi_max_txt_item.setText('Max Int {0:.0f}'.format(roi_max),
                                           size='18pt',
-                                          color='33CC00',
+                                          color='#33CC00',
                                           justify='left')
         self._ds_intensity_indicator.set_intensity(float(roi_max) / format_max)
 
