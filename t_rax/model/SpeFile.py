@@ -73,7 +73,12 @@ class SpeFile(object):
             # file
             self._read_parameter_from_header()
         else:
-            self._read_parameter_from_dom()
+            try:
+                self._read_parameter_from_dom()
+            except ValueError:
+                print("Error reading SPE file: %s" % self.filename)
+                print("Trying to read parameters from header")
+                self._read_parameter_from_header()
 
     def _read_size(self):
         """reads the dimensions of the Model from the header into the object
@@ -164,7 +169,12 @@ class SpeFile(object):
     def _create_dom_from_xml(self):
         """Creates a DOM representation of the xml footer and saves it in the
         dom field"""
-        self.dom = parseString(self.xml_string)
+        try:
+            self.dom = parseString(self.xml_string)
+        except:
+            raise ValueError(
+                "Could not parse XML footer of SPE file: %s" % self.filename
+            )
 
     def _get_xml_string(self):
         """Reads out the xml string from the file end"""

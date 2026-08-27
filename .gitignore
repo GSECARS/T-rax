@@ -165,7 +165,4 @@ $RECYCLE.BIN/
 # Mac desktop service store files
 .DS_Store
 .idea
-
-# Additional files
-test_data/
-playground/
+.venv

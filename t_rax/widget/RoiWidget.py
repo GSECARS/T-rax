@@ -346,7 +346,7 @@ class ImgROI(pg.ROI):
             if ev.acceptDrags(QtCore.Qt.LeftButton):
                 hover = True
             for btn in [QtCore.Qt.LeftButton, QtCore.Qt.RightButton, QtCore.Qt.MidButton]:
-                if int(self.acceptedMouseButtons() & btn) > 0 and ev.acceptClicks(btn):
+                if (self.acceptedMouseButtons() & btn) and ev.acceptClicks(btn):
                     hover = True
 
         if hover:
@@ -375,7 +375,7 @@ class CustomHandle(pg.graphicsItems.ROI.Handle):
             if ev.acceptDrags(QtCore.Qt.LeftButton):
                 hover = True
             for btn in [QtCore.Qt.LeftButton, QtCore.Qt.RightButton, QtCore.Qt.MidButton]:
-                if int(self.acceptedMouseButtons() & btn) > 0 and ev.acceptClicks(btn):
+                if (self.acceptedMouseButtons() & btn) and ev.acceptClicks(btn):
                     hover = True
 
         if hover:
