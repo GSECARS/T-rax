@@ -317,7 +317,8 @@ class SpeFile(object):
         pos = int(pos)
         size = int(size)
         self._fid.seek(pos)
-        return np.fromfile(self._fid, ntype, size)
+        nbytes = size * np.dtype(ntype).itemsize
+        return np.frombuffer(self._fid.read(nbytes), dtype=ntype)
 
     def _read_img(self):
         self.img = self._read_frame(4100)
