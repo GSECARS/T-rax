@@ -1,0 +1,66 @@
+[project]
+name = "t-rax"
+version = "1.3"
+authors = [
+    {name = "Christofanis Skordas", email = "55315750+skordaschristofanis@users.noreply.github.com"}
+]
+maintainers = [
+    {name = "Christofanis Skordas", email = "55315750+skordaschristofanis@users.noreply.github.com"}
+]
+readme = {file = "README.md", content-type = "text/markdown"}
+license = {file = "LICENSE"}
+requires-python = "==3.14.*"
+dependencies = [
+    "h5py>=3.16.0",
+    "lmfit>=1.3.4",
+    "numpy>=2.5.2",
+    "pillow>=12.3.0",
+    "pyepics>=3.5.10",
+    "pyqt5>=5.15.11",
+    "pyqtgraph>=0.14.0",
+    "pyshortcuts>=1.9.9",
+    "python-dateutil>=2.9.0.post0",
+    "qtpy>=2.4.3",
+    "scipy>=1.18.1",
+]
+
+[project.scripts]
+trax = "t_rax:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["t_rax"]
+
+[tool.ruff]
+exclude = [
+    ".eggs",
+    ".git",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".venv",
+    ".vscode",
+    "build",
+    "dist",
+]
+line-length = 160
+indent-width = 4
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
+ignore = []
+fixable = ["ALL"]
+unfixable = []
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+docstring-code-format = false
+docstring-code-line-length = "dynamic"

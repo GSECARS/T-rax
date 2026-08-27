@@ -17,41 +17,43 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-__version__ = '1.2'
+__version__ = "1.2"
 
 import os
 import sys
-from sys import platform
 from optparse import OptionParser
+from sys import platform
+
 from pyshortcuts import make_shortcut
 from qtpy import QtWidgets
+
 from .controller.MainController import MainController
 
+os.environ["QT_MAC_WANTS_LAYER"] = "1"
 
-def run_t_rax():
-    usage = 'Usage: run_t_rax [options]'
-    vers = 'run_t_rax %s' % __version__
 
-    parser = OptionParser(usage=usage, prog='pyshortcut', version=vers)
+def main():
+    usage = "Usage: trax [options]"
+    vers = "trax %s" % __version__
 
-    parser.add_option('-m', '--make_icon', dest='makeicon', action="store_true",
-                      default=False, help='make desktop shortcut')
+    parser = OptionParser(usage=usage, prog="pyshortcut", version=vers)
+
+    parser.add_option("-m", "--make_icon", dest="makeicon", action="store_true", default=False, help="make desktop shortcut")
     (options, args) = parser.parse_args()
-    
+
     if options.makeicon:
-        bindir = 'bin'
-        if os.name == 'nt':
-            bindir = 'Scripts'
-        script = os.path.join(sys.prefix, bindir, 'run_t_rax')
+        bindir = "bin"
+        if os.name == "nt":
+            bindir = "Scripts"
+        script = os.path.join(sys.prefix, bindir, "trax")
         _path, _fname = os.path.split(__file__)
-        iconfile = os.path.join(_path, 'widget', 'icons', 't_rax.ico')
-        make_shortcut(script, name='T-Rax',icon=iconfile, terminal=True)
-        
+        iconfile = os.path.join(_path, "widget", "icons", "t_rax.ico")
+        make_shortcut(script, name="T-Rax", icon=iconfile, terminal=True)
+
     else:
         app = QtWidgets.QApplication(sys.argv)
         if platform != "darwin":
-            app.setStyle('plastique')
+            app.setStyle("plastique")
         controller = MainController()
         controller.show_window()
         app.exec_()
-
