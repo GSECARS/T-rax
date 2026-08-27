@@ -150,7 +150,7 @@ class RubyController(QtCore.QObject):
         self.model.sample_temperature = value
 
         roi_str = str(settings.value("ruby roi"))
-        if roi_str is not "":
+        if roi_str != "":
             roi = [float(e) for e in roi_str.split()]
             self.model.roi = roi
             self.widget.roi_widget.set_rois([roi])

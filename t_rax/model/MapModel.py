@@ -92,7 +92,7 @@ class MapModel(QtCore.QObject):
                 file_units = 'cm^-1'
             elif 'nm' in line:
                 file_units = 'nm'
-            elif line[0] is not '#':
+            elif line[0] != '#':
                 x_val = float(line.split()[0])
                 y_val = float(line.split()[1])
                 self.map_data[filepath]['x_data'].append(x_val)
@@ -322,7 +322,7 @@ class MapModel(QtCore.QObject):
         for filepath, filedata in self.map_data.items():
             datalist.append(filepath)
         sorted_datalist = sorted(datalist, key=lambda s: [int(t) if t.isdigit() else t.lower() for t in
-                                                          re.split('(\d+)', s)])
+                                                          re.split(r'(\d+)', s)])
         return sorted_datalist
 
 
