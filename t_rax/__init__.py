@@ -26,11 +26,19 @@ from optparse import OptionParser
 from sys import platform
 
 from pyshortcuts import make_shortcut
-from qtpy import QtWidgets
+from qtpy import QtGui, QtWidgets
 
 from .controller.MainController import MainController
 
 os.environ["QT_MAC_WANTS_LAYER"] = "1"
+
+
+def _set_macos_dock_icon(icon_path):
+    from contextlib import suppress
+    with suppress(Exception):
+        from AppKit import NSApplication, NSImage
+        ns_image = NSImage.alloc().initWithContentsOfFile_(icon_path)
+        NSApplication.sharedApplication().setApplicationIconImage_(ns_image)
 
 
 def main():
@@ -56,9 +64,26 @@ def main():
         make_shortcut(script, name="T-Rax", icon=iconfile, terminal=True)
 
     else:
+        if platform == "darwin":
+            try:
+                from Foundation import NSBundle
+                info = NSBundle.mainBundle().infoDictionary()
+                if info is not None:
+                    info["CFBundleName"] = "T-Rax"
+                    info["CFBundleDisplayName"] = "T-Rax"
+            except ImportError:
+                pass
+
         app = QtWidgets.QApplication(sys.argv)
+        app.setApplicationName("T-Rax")
+        app.setApplicationDisplayName("T-Rax")
         if platform != "darwin":
             app.setStyle("plastique")
+        _path, _fname = os.path.split(__file__)
+        icon_path = os.path.join(_path, "widget", "icons", "t_rax.png")
+        app.setWindowIcon(QtGui.QIcon(icon_path))
+        if platform == "darwin":
+            _set_macos_dock_icon(icon_path)
         controller = MainController()
         controller.show_window()
         app.exec_()
