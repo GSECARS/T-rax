@@ -10,41 +10,44 @@ general module for Raman spectroscopy.
 Currently, the only input files allowed are Princeton Instruments \*.spe file saved either from WinSpec (File Version 2) 
 or Lightfield (File Version 3).
 
-Maintainer
-===
-
-Clemens Prescher (clemens.prescher@gmail.com)  
-Center for Advanced Radiation Sources, University of Chicago
-
-
-Requirements
-===
-
-- Python 3.13
-- qtpy
-- pyqt5
-- numpy
-- scipy
-- pyqtgraph
-- pyshortcuts
-- pillow
-- pyepics
-- python-dateutil
-- lmfit
-- h5py
-    
 Installation
 ===
 
-Updated information for creating a new conda environment and installing all required packages for GSECARS.
+### Using uv (recommended)
+
+[uv](https://docs.astral.sh/uv/) automatically manages the Python version and virtual environment from `pyproject.toml`.
 
 ```bash
-conda create -n traxENV python=3.13
-conda activate traxENV
-pip install qtpy pyqt5 pyqtgraph lmfit h5py scipy pyshortcuts pyepics numpy scipy python-dateutil pillow
-
+git clone https://github.com/gsecars/T-rax.git
+cd T-rax
+uv sync
 ```
-    
-The program itself can then be run by going into the "t-rax" directory and type:
-    
-    python run_t_rax.py
+
+Run the program:
+
+```bash
+uv run trax
+```
+
+### Using conda
+
+```bash
+git clone https://github.com/gsecars/T-rax.git
+cd T-rax
+conda create -n traxENV python=3.14
+conda activate traxENV
+pip install -e .
+```
+
+Run the program:
+
+```bash
+trax
+```
+
+Maintainers
+===
+
+Christofanis Skordas (skordasc@uchicago.edu)  
+Stella Chariton (stellachariton@uchicago.edu)  
+GSECARS, Center for Advanced Radiation Sources, University of Chicago
