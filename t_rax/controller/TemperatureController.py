@@ -340,10 +340,11 @@ class TemperatureController(QtCore.QObject):
 
     def update_time_lapse(self):
         us_temperature, us_temperature_error, ds_temperature, ds_temperature_error = self.model.fit_all_frames()
+        ds_temperature = np.array(ds_temperature, dtype=float)
+        us_temperature = np.array(us_temperature, dtype=float)
         self.widget.graph_widget.plot_ds_time_lapse(range(0, len(ds_temperature)), ds_temperature)
         self.widget.graph_widget.plot_us_time_lapse(range(0, len(us_temperature)), us_temperature)
 
-        # Filter out invalid values (NaN, inf) and empty arrays
         valid_ds = ds_temperature[np.isfinite(ds_temperature)] if len(ds_temperature) > 0 else np.array([])
         valid_us = us_temperature[np.isfinite(us_temperature)] if len(us_temperature) > 0 else np.array([])
 
