@@ -20,6 +20,7 @@
 __version__ = "1.2"
 
 import os
+import shutil
 import sys
 from optparse import OptionParser
 from sys import platform
@@ -48,6 +49,10 @@ def main():
         script = os.path.join(sys.prefix, bindir, "trax")
         _path, _fname = os.path.split(__file__)
         iconfile = os.path.join(_path, "widget", "icons", "t_rax.ico")
+        if os.name == "nt":
+            local_icon = os.path.join(os.environ.get("LOCALAPPDATA", os.path.expanduser("~")), "t_rax.ico")
+            shutil.copy2(iconfile, local_icon)
+            iconfile = local_icon
         make_shortcut(script, name="T-Rax", icon=iconfile, terminal=True)
 
     else:
