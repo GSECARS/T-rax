@@ -69,20 +69,20 @@ class MainController(object):
     def load_settings(self):
         try:
             self.temperature_controller.load_settings(self.settings)
-        except (AttributeError, TypeError):
-            pass
+        except Exception as e:
+            print(f"Warning: could not restore temperature settings: {e}")
         try:
             self.ruby_controller.load_settings(self.settings)
-        except (AttributeError, TypeError):
-            pass
+        except Exception as e:
+            print(f"Warning: could not restore ruby settings: {e}")
         try:
             self.diamond_controller.load_settings(self.settings)
-        except (AttributeError, TypeError):
-            pass
+        except Exception as e:
+            print(f"Warning: could not restore diamond settings: {e}")
         try:
             self.raman_controller.load_settings(self.settings)
-        except (AttributeError, TypeError):
-            pass
+        except Exception as e:
+            print(f"Warning: could not restore raman settings: {e}")
 
     def save_settings(self):
         self.temperature_controller.save_settings(self.settings)

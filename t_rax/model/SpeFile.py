@@ -318,7 +318,13 @@ class SpeFile(object):
         size = int(size)
         self._fid.seek(pos)
         nbytes = size * np.dtype(ntype).itemsize
-        return np.frombuffer(self._fid.read(nbytes), dtype=ntype)
+        data = self._fid.read(nbytes)
+        if len(data) < nbytes:
+            raise IOError(
+                f"SPE file read failed at offset {pos}: expected {nbytes} bytes, got {len(data)}. "
+                "File may be inaccessible or truncated."
+            )
+        return np.frombuffer(data, dtype=ntype)
 
     def _read_img(self):
         self.img = self._read_frame(4100)
