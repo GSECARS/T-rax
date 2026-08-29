@@ -252,32 +252,24 @@ class RamanWidget(BaseWidget, object):
         self.sample_position_txt.setText("{:8.2f}".format(x))
 
     def arrow_up(self):
-        current_position_x = self.get_raman_vertical_line_pos()
-        current_position_y = self.get_raman_horizontal_line_pos()
-
-        self.set_raman_horizontal_line_pos(current_position_y + .1)
-        self.update_text(current_position_x, current_position_y)
+        new_y = self.get_raman_horizontal_line_pos() + .1
+        self.set_raman_horizontal_line_pos(new_y)
+        self.update_text(self.get_raman_vertical_line_pos(), new_y)
 
     def arrow_down(self):
-        current_position_x = self.get_raman_vertical_line_pos()
-        current_position_y = self.get_raman_horizontal_line_pos()
-
-        self.set_raman_horizontal_line_pos(current_position_y - .1)
-        self.update_text(current_position_x, current_position_y)
+        new_y = self.get_raman_horizontal_line_pos() - .1
+        self.set_raman_horizontal_line_pos(new_y)
+        self.update_text(self.get_raman_vertical_line_pos(), new_y)
 
     def arrow_left(self):
-        current_position_x = self.get_raman_vertical_line_pos()
-        current_position_y = self.get_raman_horizontal_line_pos()
-
-        self.set_raman_vertical_line_pos(current_position_x - .05)
-        self.update_text(current_position_x, current_position_y)
+        new_x = self.get_raman_vertical_line_pos() - .05
+        self.set_raman_vertical_line_pos(new_x)
+        self.update_text(new_x, self.get_raman_horizontal_line_pos())
 
     def arrow_right(self):
-        current_position_x = self.get_raman_vertical_line_pos()
-        current_position_y = self.get_raman_horizontal_line_pos()
-
-        self.set_raman_vertical_line_pos(current_position_x + .05)
-        self.update_text(current_position_x, current_position_y)
+        new_x = self.get_raman_vertical_line_pos() + .05
+        self.set_raman_vertical_line_pos(new_x)
+        self.update_text(new_x, self.get_raman_horizontal_line_pos())
 
 
 class DisplayModeGroupBox(QtWidgets.QGroupBox):
