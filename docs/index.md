@@ -1,18 +1,21 @@
-T-Rax
-===
+# T-Rax
 
-**[Documentation](https://gsecars.github.io/T-rax/)**
+A Python GUI program for fast visual analysis of spectroscopic data collected during high-pressure diamond anvil cell (DAC) experiments.
 
-A python GUI program for fast visual analysis of spectroscopic data collected mostly during high pressure diamond anvil 
-cell experiments.
+T-Rax provides four independent modules:
 
-It includes separate modules for temperature fitting, pressure estimation using ruby peak or the diamond edge and a 
-general module for Raman spectroscopy.
- 
-Currently, the only input files allowed are Princeton Instruments \*.spe file saved either from WinSpec or Lightfield.
+| Module | Purpose |
+|---|---|
+| [Temperature](modules/temperature.md) | Two-color pyrometry from thermal emission spectra |
+| [Ruby](modules/ruby.md) | Pressure from the ruby R1 fluorescence line |
+| [Diamond](modules/diamond.md) | Pressure from the diamond Raman edge |
+| [Raman](modules/raman.md) | General Raman spectroscopy with overlay support |
 
-Installation
-===
+**Supported input format:** Princeton Instruments `.spe` files (WinSpec v2 and LightField v3).
+
+---
+
+## Installation
 
 First, get the source: either clone with [Git](https://git-scm.com/downloads) or [download the ZIP](https://github.com/GSECARS/T-rax/archive/refs/heads/gsecars.zip) and extract it. Then follow one of the options below.
 
@@ -24,12 +27,10 @@ First, get the source: either clone with [Git](https://git-scm.com/downloads) or
 
 uv automatically manages the Python version and virtual environment. No separate Python install needed.
 
-**Create the desktop shortcut**
+**Run the program**
 ```bash
 cd T-rax && uv run trax --make_icon
 ```
-
-This creates a desktop icon. Double-click it to launch T-Rax from then on.
 
 ---
 
@@ -64,12 +65,13 @@ pip install -e .
 trax --make_icon
 ```
 
-This creates a desktop icon. Double-click it to launch T-Rax from then on.
+---
+
+After running `--make_icon`, a **T-Rax** desktop icon is created. Double-click it to launch from then on — no terminal needed.
 
 ---
 
-Maintainers
-===
+## Maintainers
 
 Christofanis Skordas (skordasc@uchicago.edu)  
 Stella Chariton (stellachariton@uchicago.edu)  

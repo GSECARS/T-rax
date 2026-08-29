@@ -1,0 +1,48 @@
+site_name: T-Rax
+site_url: https://gsecars.github.io/T-rax/
+site_description: GUI program for spectroscopic analysis during diamond anvil cell experiments
+repo_url: https://github.com/GSECARS/T-rax
+repo_name: GSECARS/T-rax
+edit_uri: edit/gsecars/docs/
+
+theme:
+  name: material
+  logo: t_rax.png
+  favicon: t_rax.png
+  palette:
+    - scheme: default
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - content.action.edit
+
+nav:
+  - Home: index.md
+  - Modules:
+    - Temperature: modules/temperature.md
+    - Ruby: modules/ruby.md
+    - Diamond: modules/diamond.md
+    - Raman: modules/raman.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - tables
+  - attr_list
