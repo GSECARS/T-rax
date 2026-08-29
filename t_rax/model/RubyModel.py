@@ -96,8 +96,11 @@ class RubyModel(SingleSpectrumModel):
             corr1 = deltaT * 0.0068259498
             lam = lam + 0.00003547 - corr1 - corr2 - corr3
         try:
-            rat = (lam / lam0corr) ** B
-        except ValueError:
+            ratio = lam / lam0corr
+            if ratio < 0:
+                return np.nan
+            rat = ratio ** B
+        except (ValueError, ZeroDivisionError):
             return np.nan
         P = (Acorr / B) * rat - (Acorr / B)
         P = (P * 100) / 100.
