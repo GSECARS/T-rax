@@ -13,6 +13,21 @@ Determines pressure from the shift of the first-order diamond Raman edge (zone-c
 
 ---
 
+## Pressure Equation
+
+```
+P = K · (Δν / ν₀) · [1 + ((K′ − 1) / 2) · (Δν / ν₀)]
+```
+
+| Symbol | Value | Description |
+|---|---|---|
+| ν₀ | 1334 cm⁻¹ | Diamond edge position at ambient |
+| Δν | ν − ν₀ | Shift under pressure |
+| K | 547 GPa | Bulk modulus |
+| K′ | 3.75 | Pressure derivative of the bulk modulus |
+
+---
+
 ## Derivative Display
 
 The derivative spectrum shows the smoothed first derivative of intensity with respect to wavenumber. The inflection point of the diamond edge corresponds to a zero-crossing in the derivative, making the edge position easier to identify when the raw spectrum is broad or overlapping with sample peaks.
