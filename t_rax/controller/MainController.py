@@ -38,7 +38,7 @@ class MainController(object):
     def __init__(self):
         self.main_widget = MainWidget()
 
-        self.main_widget.setWindowTitle('T-Rax ' + __version__)
+        self.main_widget.setWindowTitle('T-Rax ' + __version__ + ' - GSECARS')
 
         self.create_signals()
         self.create_data_models()
