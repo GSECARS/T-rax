@@ -1,38 +1,49 @@
 # Temperature Module
 
-The Temperature module fits thermal emission spectra to the Planck radiation function to determine sample temperature during laser-heated DAC experiments. Both the downstream (DS) and upstream (US) sides of the sample are measured independently.
+Determines sample temperature from thermal emission spectra using two-color pyrometry. The downstream (DS) and upstream (US) sides of the sample are fitted independently, each with its own region of interest and calibration spectrum.
+
+---
 
 ## Workflow
 
-1. Load a data image (`.spe` file containing the thermal emission spectrum).
-2. Load DS and US calibration images (lamp or blackbody reference spectra).
-3. Set the ROI for each side to isolate the emission signal.
-4. Read the fitted temperatures for DS and US.
+1. Load a **data image** — a `.spe` file containing the thermal emission spectrum of the heated sample.
+2. Load a **DS calibration** and a **US calibration** — reference spectra from a known source (tungsten lamp or blackbody) used to correct for the detector and spectrometer response.
+3. Set the **ROI** for each side to isolate the emission signal from the sample and exclude contributions from the diamond anvils or gasket.
+4. Read the fitted DS and US temperatures.
 
-## Key concepts
+---
 
-**Two-color pyrometry** — The sample temperature is extracted by fitting the measured spectral radiance to the Planck function:
+## Calibration
 
-$$B(\lambda, T) = \frac{C_1}{\lambda^5 \left(e^{C_2 / \lambda T} - 1\right)}$$
+The raw emission spectrum is divided by the calibration spectrum to produce a corrected spectral radiance. This corrected spectrum is then fitted to the Planck function to extract temperature. Accurate calibration is essential — a mismatch between the calibration and data (e.g., different grating position or ROI) will produce incorrect temperatures.
 
-where $C_1$ and $C_2$ are the first and second radiation constants.
+---
 
-**Calibration** — A reference spectrum (tungsten lamp or blackbody) is used to correct for the wavelength-dependent efficiency of the spectrometer and detector.
+## DS and US Sides
 
-**DS / US** — Downstream and upstream refer to the two optical paths through the DAC. Each side has its own ROI and calibration, and temperatures are fitted and displayed separately.
+In a laser-heated DAC experiment, the sample is illuminated from both sides. T-Rax fits each side independently:
+
+- **DS (downstream)** — the side facing the downstream beam direction
+- **US (upstream)** — the side facing the upstream beam direction
+
+Both temperatures are displayed simultaneously. A significant DS/US difference may indicate a temperature gradient across the sample or a misaligned ROI.
+
+---
 
 ## Controls
 
 | Control | Description |
 |---|---|
-| Load Data | Load the thermal emission `.spe` file |
-| Load DS Calibration | Load the downstream calibration image |
-| Load US Calibration | Load the upstream calibration image |
-| ROI | Adjust the region of interest on the 2D detector image for each side |
-| ◀ / ▶ | Step to the previous/next file in the same directory |
-| Frame | Navigate frames within a multi-frame `.spe` file |
+| **Load Data** | Load the thermal emission `.spe` file |
+| **Load DS Calibration** | Load the downstream calibration image |
+| **Load US Calibration** | Load the upstream calibration image |
+| **ROI** | Adjust the detector region of interest for each side |
+| **◀ / ▶ file buttons** | Step to the previous or next file in the directory |
+| **Frame** | Navigate frames within a multi-frame `.spe` file |
 
-## Output log
+---
+
+## Output Log
 
 A `T_log.txt` file is automatically created in the same directory as the data file and appended with each measurement:
 

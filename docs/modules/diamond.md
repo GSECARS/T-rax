@@ -1,36 +1,34 @@
-# Diamond Module
+# Diamond Pressure Module
 
-The Diamond module determines pressure from the shift of the first-order diamond Raman edge (zone-center phonon). It uses the second-order Birch–Murnaghan equation of state parameterised for diamond.
+Determines pressure from the shift of the first-order diamond Raman edge (zone-center phonon at ~1334 cm⁻¹). A smoothed derivative display is provided to help locate the edge position precisely on broad or noisy spectra.
+
+---
 
 ## Workflow
 
 1. Load a diamond Raman spectrum (`.spe` file).
-2. Set the **reference position** (diamond edge wavenumber at ambient, default 1334 cm⁻¹).
-3. Move the **sample cursor line** to the diamond edge, using the derivative display to locate the peak precisely.
-4. Read the pressure.
+2. Confirm or adjust the **reference position** — the diamond edge wavenumber at ambient conditions (default: 1334 cm⁻¹).
+3. Position the **sample line** on the diamond edge by clicking on the spectrum or using the arrow keys. Switch to the **derivative view** if the edge is difficult to locate on the raw spectrum.
+4. Read the calculated pressure.
 
-## Pressure equation
+---
 
-$$P = K \frac{\Delta\nu}{\nu_0} \left[ 1 + \frac{K' - 1}{2} \frac{\Delta\nu}{\nu_0} \right]$$
+## Derivative Display
 
-where:
+The derivative spectrum shows the smoothed first derivative of intensity with respect to wavenumber. The inflection point of the diamond edge corresponds to a zero-crossing in the derivative, making the edge position easier to identify when the raw spectrum is broad or overlapping with sample peaks.
 
-- $\nu_0 = 1334\ \text{cm}^{-1}$ — reference edge position  
-- $\Delta\nu = \nu - \nu_0$ — shift under pressure  
-- $K = 547\ \text{GPa}$  
-- $K' = 3.75$
+The **smoothing** slider controls the width of the Gaussian smoothing kernel applied before differentiation. Increase smoothing on noisy spectra; reduce it if fine structure needs to be resolved.
 
-## Derivative display
-
-The module can display the **derivative spectrum** (smoothed first derivative of intensity with respect to wavenumber). This is useful for locating the inflection point of the diamond edge when the raw spectrum is broad or noisy. Smoothing is adjustable.
+---
 
 ## Controls
 
 | Control | Description |
 |---|---|
-| Load | Load a diamond Raman `.spe` file |
-| Sample position | Wavenumber of the diamond edge under pressure |
-| Reference position | Edge position at ambient (default 1334 cm⁻¹) |
-| Show derivative | Toggle the smoothed derivative spectrum |
-| Smoothing | Gaussian smoothing width for the derivative |
-| ◀ ▶ arrow keys | Nudge the cursor line left/right |
+| **Load** | Load a diamond Raman `.spe` file |
+| **Sample position** | Wavenumber of the diamond edge under pressure (cm⁻¹) |
+| **Reference position** | Edge position at ambient — default 1334 cm⁻¹ |
+| **Show derivative** | Toggle the smoothed derivative spectrum overlay |
+| **Smoothing** | Gaussian smoothing width for the derivative |
+| **◀ ▶ arrow keys** | Nudge the sample line left or right |
+| **◀ / ▶ file buttons** | Step to the previous or next file in the directory |

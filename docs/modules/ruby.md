@@ -1,43 +1,48 @@
-# Ruby Module
+# Ruby Pressure Module
 
-The Ruby module determines pressure from the shift of the ruby R1 fluorescence line using established pressure scales. It supports real-time pressure reading as the cursor line is moved, automatic peak fitting, and temperature correction.
+Determines pressure from the shift of the ruby R1 fluorescence line. Pressure updates in real time as the cursor line is moved, and an automatic peak fitter is available for precise positioning.
+
+---
 
 ## Workflow
 
 1. Load a ruby fluorescence spectrum (`.spe` file).
-2. Set the **reference position** (R1 wavelength at ambient conditions, typically 694.35 nm).
-3. Move the **sample cursor line** to the R1 peak position, or use **Fit** to locate it automatically.
-4. Read the pressure.
+2. Confirm or adjust the **reference position** — the R1 wavelength at ambient conditions (default: 694.35 nm).
+3. Position the **sample line** on the R1 peak by clicking on the spectrum, using the arrow keys to fine-tune, or clicking **Fit** to locate it automatically.
+4. Select the appropriate **pressure scale** for your experimental conditions.
+5. Read the calculated pressure.
 
-## Pressure scales
+---
 
-Three scales are available:
+## Pressure Scales
 
-| Scale | A (GPa) | B | Notes |
-|---|---|---|---|
-| Dewaele (default) | 1920 | 9.61 | Recommended for most experiments |
-| Hydrostatic | 1904 | 7.665 | For hydrostatic or quasi-hydrostatic media |
-| Non-hydrostatic | 1904 | 5 | For non-hydrostatic conditions |
+| Scale | Conditions |
+|---|---|
+| **Dewaele** *(default)* | Recommended for most experiments |
+| **Hydrostatic** | Hydrostatic or quasi-hydrostatic pressure media |
+| **Non-hydrostatic** | Non-hydrostatic conditions |
 
-All scales use the Mao et al. form:
+All three scales relate pressure to the R1 wavelength shift relative to the ambient reference. The Dewaele scale is selected by default and is appropriate for the majority of DAC experiments.
 
-$$P = \frac{A}{B} \left[ \left(\frac{\lambda}{\lambda_0}\right)^B - 1 \right]$$
+---
 
-where $\lambda$ is the measured R1 wavelength and $\lambda_0$ is the reference wavelength.
+## Temperature Correction
 
-## Temperature correction
+When sample and reference temperatures differ from 298 K, a thermal correction is automatically applied to both the reference wavelength and the scale factor. Enter the known sample temperature in the **Sample temperature** field to enable this correction.
 
-When sample temperature is known (e.g., from the Temperature module), a thermal correction is applied to both the reference wavelength and the scale factor $A$.
+---
 
 ## Controls
 
 | Control | Description |
 |---|---|
-| Load | Load a ruby `.spe` file |
-| Sample position | Wavelength of the R1 line under pressure |
-| Reference position | R1 wavelength at ambient (default 694.35 nm) |
-| Sample / Reference temperature | Used for thermal correction |
-| Scale | Select the pressure scale |
-| Fit | Auto-fit two pseudo-Voigt peaks (R1 and R2) |
-| Auto fit | Re-fit automatically each time a new file loads |
-| ◀ ▶ arrow keys | Nudge the cursor line left/right by 0.02 nm |
+| **Load** | Load a ruby fluorescence `.spe` file |
+| **Sample position** | Wavelength of the R1 peak under pressure (nm) |
+| **Reference position** | R1 wavelength at ambient — default 694.35 nm |
+| **Sample temperature** | Sample temperature for thermal correction (K) |
+| **Reference temperature** | Reference temperature — default 298 K |
+| **Scale** | Pressure scale selection |
+| **Fit** | Fit two pseudo-Voigt peaks (R1 and R2) automatically |
+| **Auto fit** | Re-fit automatically each time a new file is loaded |
+| **◀ ▶ arrow keys** | Nudge the sample line left or right by 0.02 nm |
+| **◀ / ▶ file buttons** | Step to the previous or next file in the directory |
