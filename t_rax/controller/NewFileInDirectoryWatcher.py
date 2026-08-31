@@ -18,7 +18,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import time
 
 from qtpy import QtCore, QtWidgets
 
@@ -76,7 +75,7 @@ class NewFileInDirectoryWatcher(QtCore.QObject):
         """
         activates the watcher to emit signals when a new file is added
         """
-        if ~self.check_timer.isActive():
+        if not self.check_timer.isActive():
             self._files_in_path = os.listdir(self.path)
             self.check_timer.start()
 
@@ -114,12 +113,11 @@ class NewFileInDirectoryWatcher(QtCore.QObject):
 
             if valid_file:
                 if os.stat(new_file_path).st_size > 100:
-                    while True:
-                        try:
-                            os.rename(new_file_path, new_file_path)
-                            break
-                        except OSError:
-                            time.sleep(self.interval/1000.)
+                    try:
+                        os.rename(new_file_path, new_file_path)
+                    except OSError:
+                        # File is still being written (Windows file lock); retry on next timer tick
+                        return
                     self.file_added.emit(new_file_path)
                 else:
                     return
