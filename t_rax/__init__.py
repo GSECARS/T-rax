@@ -63,7 +63,8 @@ def main():
             local_icon = os.path.join(os.environ.get("LOCALAPPDATA", os.path.expanduser("~")), "t_rax.ico")
             shutil.copy2(iconfile, local_icon)
             iconfile = local_icon
-        make_shortcut(script, name="T-Rax", icon=iconfile, terminal=True, public=options.public)
+        make_shortcut(script, name="T-Rax", icon=iconfile, terminal=True,
+                      public=options.public, folder="GSEApps" if options.public else None)
 
     else:
         if platform == "darwin":
