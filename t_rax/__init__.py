@@ -49,9 +49,10 @@ def main():
     parser = OptionParser(usage=usage, prog="pyshortcut", version=vers)
 
     parser.add_option("-m", "--make_icon", dest="makeicon", action="store_true", default=False, help="make desktop shortcut")
+    parser.add_option("-p", "--public", dest="public", action="store_true", default=False, help="make desktop shortcut on public desktop")
     (options, args) = parser.parse_args()
 
-    if options.makeicon:
+    if options.makeicon or options.public:
         bindir = "bin"
         if os.name == "nt":
             bindir = "Scripts"
@@ -62,7 +63,7 @@ def main():
             local_icon = os.path.join(os.environ.get("LOCALAPPDATA", os.path.expanduser("~")), "t_rax.ico")
             shutil.copy2(iconfile, local_icon)
             iconfile = local_icon
-        make_shortcut(script, name="T-Rax", icon=iconfile, terminal=True)
+        make_shortcut(script, name="T-Rax", icon=iconfile, terminal=True, userfolders=not options.public)
 
     else:
         if platform == "darwin":
